@@ -5,7 +5,7 @@ from absl import app
 import numpy as np
 
 np.set_printoptions(threshold=np.inf)
-
+#-------------------------------------Input Space--------------------------------------------------------------
 #-------------------------------------SCREEN DATA GET FUNCTIONS------------------------------------------------
 #These return a 2d array of bytes, where the bytes represent different things
 #Getters for creep(zerg only), power(protoss only), shields(protoss only)
@@ -53,6 +53,24 @@ def getDensityAAScreen(obs):
 def getAOEsScreen(obs):
     return obs.observation.feature_screen.effects
 #--------------------------------------END SCREEN GETS-------------------------------
+#--------------------------------------Numeric Value Inputs--------------------------
+def getMinerals(obs):
+    return obs.observation.player.vespene
+def getGas(obs):
+    return obs.observation.player.minerals
+def getSupply(obs):
+    return obs.observation.player.food_used
+def getSupplyMax(obs):
+    return obs.observation.player.food_cap
+#Returns difference between current and max, maybe used
+def getSupplyFree(obs):
+    return getSupplyMax(obs)-getSupply(obs)
+def getSupplyWorkers(obs):
+    return obs.observation.player.food_workers
+def getSupplyArmy(obs):
+    return obs.observation.player.food_army
+def getPlayerID(obs):
+    return obs.observation.player.player_id
 
 
 class MarineAgent(base_agent.BaseAgent):
