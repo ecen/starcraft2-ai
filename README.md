@@ -14,3 +14,11 @@ __Running custom agents__. If you have a python file named `my-agent.py` which c
 To view replays in the SC2 game client (not the PYSC2 one), place the replay files in `drive_c/users/[your username]/My Documents/StarCraft II/Accounts/[account id, ex: 123456789]/[another id, ex: 1-S2-3-4567890]/Replays/Multiplayer/AI/`). This also works when SC2 is installed under Wine on Linux.
 
 To view the replay you may also need to add the map to your SC2 folder. Put the map in `drive_c/ProgramData/Blizzard Entertainment/StarCraft II/Maps/Cache/`.
+
+## Status
+Information and status of things.
+
+### ecen -> agent-swann.SwannCraft
+A scripted agent designed after following [a tutorial](https://chatbotslife.com/building-a-basic-pysc2-agent-b109cde1477c). Currently works and can win, but does not always. Run with `python3 -m pysc2.bin.agent --map Simple64 --agent_race terran --agent agent-swann.SwannCraft`.
+
+Swann is named after the chief engineer aboard Raynor's ship in the Wings of Liberty SC2 campaign.
