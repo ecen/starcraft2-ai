@@ -22,3 +22,6 @@ Information and status of things.
 A scripted agent designed after following [a tutorial](https://chatbotslife.com/building-a-basic-pysc2-agent-b109cde1477c). Currently works and can win, but does not always. Run with `python3 -m pysc2.bin.agent --map Simple64 --agent_race terran --agent agent-swann.SwannCraft`.
 
 Swann is named after the chief engineer aboard Raynor's ship in the Wings of Liberty SC2 campaign.
+
+### ecen -> supervised-mk1.Mk1
+An agent currently taking random actions. Designed from the beginning of [this tutorial](https://chatbotslife.com/building-a-smart-pysc2-agent-cdc269cb095d).
