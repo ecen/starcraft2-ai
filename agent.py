@@ -6,6 +6,9 @@ import numpy as np
 
 np.set_printoptions(threshold=np.inf)
 
+
+
+
 class MarineAgent(base_agent.BaseAgent):
     def step(self, obs):
         super(MarineAgent, self).step(obs)
@@ -52,7 +55,10 @@ if __name__ == "__main__":
 #-------------------------------------Action Space-------------------------------------------------------------
 
 
+
 #-------------------------------------END ACTION SPACE---------------------------------------------------------
+
+
 
 #-------------------------------------Input Space--------------------------------------------------------------
 #-------------------------------------SCREEN DATA GET FUNCTIONS------------------------------------------------
@@ -104,9 +110,9 @@ def getAOEsScreen(obs):
 #--------------------------------------END SCREEN GETS-------------------------------
 #--------------------------------------Numeric Value Inputs--------------------------
 def getMinerals(obs):
-    return obs.observation.player.vespene
-def getGas(obs):
     return obs.observation.player.minerals
+def getGas(obs):
+    return obs.observation.player.vespene
 def getSupply(obs):
     return obs.observation.player.food_used
 def getSupplyMax(obs):
