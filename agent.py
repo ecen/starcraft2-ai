@@ -1,64 +1,41 @@
 from pysc2.agents import base_agent
 from pysc2.env import sc2_env
-from pysc2.lib import actions, features
+from pysc2.lib import actions, features, units
+
 from absl import app
 import numpy as np
 
 np.set_printoptions(threshold=np.inf)
 
+#-------------------------------------Action Space-------------------------------------------------------------
+#-------------------------------------Combined Actions---------------------------------------------------------
 
 
 
-class MarineAgent(base_agent.BaseAgent):
-    def step(self, obs):
-        super(MarineAgent, self).step(obs)
-
-
-        exit()
-
+#-------------------------------------Raw Actions------------------------------------------------------------
+def actAttackScreen(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Attack_screen.id):
+        return actions.FUNCTIONS.Attack_screen("now", (x,y))
+    else:
         return actions.FUNCTIONS.no_op()
 
 
-def main(unused_argv):
-    agent = MarineAgent()
-    try:
-        while True:
-            with sc2_env.SC2Env(
-                    map_name="AbyssalReef",
-                    players=[sc2_env.Agent(sc2_env.Race.terran),
-                             sc2_env.Bot(sc2_env.Race.terran,
-                                         sc2_env.Difficulty.very_easy)],
-                    agent_interface_format=features.AgentInterfaceFormat(
-                        feature_dimensions=features.Dimensions(screen=84, minimap=64)),
-                    step_mul=16,
-                    game_steps_per_episode=0,
-                    visualize=True) as env:
+#-------------------------------------Helper Functions---------------------------------------------------------
+#Returns True if the action is currently available, use this to avoid activating
+#actions that aren't allowed and crashing the agent.
+def actIsAvailable(obs, action):
+    if action in obs.observation.available_actions:
+        return True
+    return False
 
-                agent.setup(env.observation_spec(), env.action_spec())
+def executeMultistepAction():
+    return False #TODO: Implement, put all logic for
 
-                timesteps = env.reset()
-                agent.reset()
-
-                while True:
-                    step_actions = [agent.step(timesteps[0])]
-                    if timesteps[0].last():
-                        break
-                    timesteps = env.step(step_actions)
-
-    except KeyboardInterrupt:
-        pass
-
-
-if __name__ == "__main__":
-    app.run(main)
-
-#-------------------------------------Action Space-------------------------------------------------------------
-
-
-
-#-------------------------------------END ACTION SPACE---------------------------------------------------------
-
-
+def numberToPoint(number, numberRepresentingOrigin, areaWidth, areaHeight):
+    shiftedNumber = (number-numberRepresentingOrigin)
+    height = shiftedNumber // areaHeight # // Is apparently integer division
+    width = shiftedNumber % areaWidth
+    return width, height #TODO: Handle heights that are out of bounds
 
 #-------------------------------------Input Space--------------------------------------------------------------
 #-------------------------------------SCREEN DATA GET FUNCTIONS------------------------------------------------
@@ -128,3 +105,54 @@ def getPlayerID(obs):
     return obs.observation.player.player_id
 #-----------------------------------END NUMERIC INPUTS-------------------------------
 #-----------------------------------END INPUT SPACE----------------------------------
+
+class MarineAgent(base_agent.BaseAgent):
+    i = 0
+    def step(self, obs):
+        super(MarineAgent, self).step(obs)
+
+        a = [unit for unit in obs.observation.feature_units if unit.unit_type == units.Terran.SCV]
+        scv = a[0]
+        if(self.i == 0):
+            self.i = self.i+1
+            return actions.FUNCTIONS.select_point("select_all_type", (scv.x,
+                                                                  scv.y))
+        return actAttackScreen(obs, 42,42)
+
+        #exit()
+
+        return actions.FUNCTIONS.no_op()
+
+
+def main(unused_argv):
+    agent = MarineAgent()
+    try:
+        while True:
+            with sc2_env.SC2Env(
+                    map_name="AbyssalReef",
+                    players=[sc2_env.Agent(sc2_env.Race.terran),
+                             sc2_env.Bot(sc2_env.Race.terran,
+                                         sc2_env.Difficulty.very_easy)],
+                    agent_interface_format=features.AgentInterfaceFormat(
+                        feature_dimensions=features.Dimensions(screen=84, minimap=64), use_feature_units=True),
+                    step_mul=16,
+                    game_steps_per_episode=0,
+                    visualize=True) as env:
+
+                agent.setup(env.observation_spec(), env.action_spec())
+
+                timesteps = env.reset()
+                agent.reset()
+
+                while True:
+                    step_actions = [agent.step(timesteps[0])]
+                    if timesteps[0].last():
+                        break
+                    timesteps = env.step(step_actions)
+
+    except KeyboardInterrupt:
+        pass
+
+
+if __name__ == "__main__":
+    app.run(main)
