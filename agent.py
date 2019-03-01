@@ -128,6 +128,7 @@ class MarineAgent(base_agent.BaseAgent):
                 return actions.FUNCTIONS.select_point("select_all_type", (scv.x,
                                                                   scv.y))
 
+
         q = actAttackMinimap(obs, 20, 20)
         print(q)
         return q
