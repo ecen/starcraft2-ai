@@ -19,6 +19,13 @@ def actAttackScreen(obs, x, y):
     else:
         return actions.FUNCTIONS.no_op()
 
+def actAttackMinimap(obs,x,y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Attack_minimap.id):
+        # This only works if there is ground (for ground units at least), otherwise seems to noop?
+        return actions.FUNCTIONS.Attack_minimap("now", (x,y))
+    else:
+        return actions.FUNCTIONS.no_op()
+
 
 # -------------------------------------Helper Functions---------------------------------------------------------
 # Returns True if the action is currently available, use this to avoid activating
@@ -169,12 +176,21 @@ class MarineAgent(base_agent.BaseAgent):
         super(MarineAgent, self).step(obs)
 
         a = [unit for unit in obs.observation.feature_units if unit.unit_type == units.Terran.SCV]
-        scv = a[0]
-        if (self.i == 0):
-            self.i = self.i + 1
-            return actions.FUNCTIONS.select_point("select_all_type", (scv.x,
-                                                                      scv.y))
-        return actAttackScreen(obs, 42, 42)
+
+        if len(a) > 0:
+            scv = a[0]
+
+
+            if(self.i == 0):
+                self.i = self.i+1
+                return actions.FUNCTIONS.select_point("select_all_type", (scv.x,
+                                                                  scv.y))
+
+
+        q = actAttackMinimap(obs, 20, 20)
+        print(q)
+        return q
+
 
         # exit()
 
