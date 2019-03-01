@@ -468,7 +468,7 @@ class MarineAgent(base_agent.BaseAgent):
 
             if(self.i == 0):
                 self.i = self.i+1
-                return actions.FUNCTIONS.select_point("select_all_type", (scv.x,scv.y))
+                return actSelectPoint_selectAllType(obs, scv.x,scv.y)
 
         self.i = self.i+1
 
@@ -495,9 +495,9 @@ class MarineAgent(base_agent.BaseAgent):
         if self.i == 273:
             return actTrainMarine(obs)
         if self.i == 380:
-            return actions.FUNCTIONS.select_point("select_all_type", (m[0].x, m[0].y))
+            return actSelectPoint_selectAllType(obs,m[0].x, m[0].y)
         if self.i == 381:
-            return actions.FUNCTIONS.select_point("add_all_type", (a[0].x, a[0].y))
+            return actSelectPoint_addAllType(obs, a[0].x, a[0].y)
         if self.i == 382:
             return actAttackMinimap(obs, 10,10)
         #q = actHarvestScreen(obs, 20, 20)
