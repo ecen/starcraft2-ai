@@ -10,22 +10,78 @@ np.set_printoptions(threshold=np.inf)
 
 # -------------------------------------Action Space-------------------------------------------------------------
 # -------------------------------------Combined Actions---------------------------------------------------------
+multiActions = []
+def executeMultiAction(obs):
+    if len(multiActions) > 0:
+        return multiActions.pop()(obs) #pop returns the remove element, that's why this looks so weird
+    else:
+        return False
+
+def actMultiTrainMarine(obs):
+    #TODO: Add if statement that checks if barracks are already selected, if so: only do the training?
+    global multiActions #Python bs to access outer scope
+    multiActions = [actTrainMarine] #This should be in opposite order of execution, pop takes last element?
+    return actSelectAllBarracks(obs)
+
+def actMultiTrainSCV(obs):
+    global multiActions
+    multiActions = [actTrainSCV]
+    return actSelectAllCommandCenters(obs)
+
+#TODO: Test, requires vespene
+def actMultiBuildBarrackReactor(obs):
+    global multiActions
+    multiActions = [actBuildReactor(obs)]
+    return actSelectAllBarracks(obs)
 
 
-# -------------------------------------Raw Actions------------------------------------------------------------
-def actBuildTechlab(obs, x, y): #TODO: Untested
+#--------------------------------------"Smart" Actions---------------------------------------------------------
+def smartSelectAllUnit(obs, unitType):
+    #units.Terran.SCV
+    allUnits = [unit for unit in obs.observation.feature_units if unit.unit_type == unitType]
+    if len(allUnits) > 0:
+        return actSelectPoint_selectAllType(obs, allUnits[0].x, allUnits[0].y)
+    return actions.FUNCTIONS.no_op()
+
+def smartSelectAddAllUnit(obs, unitType):
+    #units.Terran.SCV
+    allUnits = [unit for unit in obs.observation.feature_units if unit.unit_type == unitType]
+    if len(allUnits) > 0:
+        return actSelectPoint_addAllType(obs, allUnits[0].x, allUnits[0].y)
+    return actions.FUNCTIONS.no_op()
+
+def actSelectAllBarracks(obs):
+    return smartSelectAllUnit(obs, units.Terran.Barracks)
+def actSelectAllMarines(obs):
+    return smartSelectAllUnit(obs, units.Terran.Marine)
+def actSelectAllSCVs(obs):
+    return smartSelectAllUnit(obs, units.Terran.SCV)
+def actSelectAllCommandCenters(obs):
+    return smartSelectAllUnit(obs, units.Terran.CommandCenter)
+
+def actSelectAddAllBarracks(obs):
+    return smartSelectAddAllUnit(obs, units.Terran.Barracks)
+def actSelectAddAllMarines(obs):
+    return smartSelectAddAllUnit(obs, units.Terran.Marine)
+def actSelectAddAllSCVs(obs):
+    return smartSelectAddAllUnit(obs, units.Terran.SCV)
+def actSelectAddAllCommandCenters(obs):
+    return smartSelectAddAllUnit(obs, units.Terran.CommandCenter)
+
+# -------------------------------------Raw Actions-------------------------------------------------------------
+def actBuildTechlab(obs): #TODO: Untested
     if actIsAvailable(obs, actions.FUNCTIONS.Build_Techlab_quick.id):
         return actions.FUNCTIONS.Build_Techlab_quick("now", [x,y])
     else:
         return actions.FUNCTIONS.no_op()
 
-def actBuildReactor(obs, x, y): #TODO: Untested
+def actBuildReactor(obs): #TODO: Untested
     if actIsAvailable(obs, actions.FUNCTIONS.Build_Reactor_quick.id):
         return actions.FUNCTIONS.Build_Reactor_quick("now", [x,y])
     else:
         return actions.FUNCTIONS.no_op()
 
-def actBuildNuke(obs, x, y): #TODO: Untested
+def actBuildNuke(obs): #TODO: Untested
     if actIsAvailable(obs, actions.FUNCTIONS.Build_Nuke_quick.id):
         return actions.FUNCTIONS.Build_Nuke_quick("now", [x,y])
     else:
@@ -458,46 +514,27 @@ class MarineAgent(base_agent.BaseAgent):
 
     def step(self, obs):
         super(MarineAgent, self).step(obs)
-
-        a = [unit for unit in obs.observation.feature_units if unit.unit_type == units.Terran.SCV]
-        m = [unit for unit in obs.observation.feature_units if unit.unit_type == units.Terran.Marine]
-
-        if len(a) > 0:
-            scv = a[0]
-
-
-            if(self.i == 0):
-                self.i = self.i+1
-                return actSelectPoint_selectAllType(obs, scv.x,scv.y)
+        #This is the code that handles actions that require multiple steps, don't touch and leave at the top
+        doingMultiAction = executeMultiAction(obs)
+        if doingMultiAction != False:
+            return doingMultiAction
+        #End of multistep action code
 
         self.i = self.i+1
-
+        if self.i == 1:
+            return actMultiTrainSCV(obs)
+        if self.i == 5:
+            return actSelectAllSCVs(obs)
         if self.i == 30:
             return actBuildSupplyDepot(obs,5,5)
         if self.i == 80:
             return actBuildBarracks(obs,50,5)
         if self.i == 179:
-            return actSelectPoint(obs, 50, 5)
-        if self.i == 180:
-            return actTrainMarine(obs)
-        if self.i == 181:
-            return actTrainMarine(obs)
-        if self.i == 182:
-            return actTrainMarine(obs)
-        if self.i == 183:
-            return actTrainMarine(obs)
-        if self.i == 270:
-            return actTrainMarine(obs)
-        if self.i == 271:
-            return actTrainMarine(obs)
-        if self.i == 272:
-            return actTrainMarine(obs)
-        if self.i == 273:
-            return actTrainMarine(obs)
+            return actMultiTrainMarine(obs)
         if self.i == 380:
-            return actSelectPoint_selectAllType(obs,m[0].x, m[0].y)
+            return actSelectAllMarines(obs)
         if self.i == 381:
-            return actSelectPoint_addAllType(obs, a[0].x, a[0].y)
+            return actSelectAddAllSCVs(obs)
         if self.i == 382:
             return actAttackMinimap(obs, 10,10)
         #q = actHarvestScreen(obs, 20, 20)
