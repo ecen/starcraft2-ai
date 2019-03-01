@@ -13,6 +13,236 @@ np.set_printoptions(threshold=np.inf)
 
 
 # -------------------------------------Raw Actions------------------------------------------------------------
+def actBuildTechlab(obs, x, y): #TODO: Untested
+    if actIsAvailable(obs, actions.FUNCTIONS.Build_Techlab_quick.id):
+        return actions.FUNCTIONS.Build_Techlab_quick("now", [x,y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actBuildReactor(obs, x, y): #TODO: Untested
+    if actIsAvailable(obs, actions.FUNCTIONS.Build_Reactor_quick.id):
+        return actions.FUNCTIONS.Build_Reactor_quick("now", [x,y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actBuildNuke(obs, x, y): #TODO: Untested
+    if actIsAvailable(obs, actions.FUNCTIONS.Build_Nuke_quick.id):
+        return actions.FUNCTIONS.Build_Nuke_quick("now", [x,y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actTrainWidowMine(obs):
+    if actIsAvailable(obs, actions.FUNCTIONS.Train_WidowMine_quick.id):
+        return actions.FUNCTIONS.Train_WidowMine_quick("now")
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actTrainVikingFighter(obs):
+    if actIsAvailable(obs, actions.FUNCTIONS.Train_VikingFighter_quick.id):
+        return actions.FUNCTIONS.Train_VikingFighter_quick("now")
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actTrainThor(obs):
+    if actIsAvailable(obs, actions.FUNCTIONS.Train_Thor_quick.id):
+        return actions.FUNCTIONS.Train_Thor_quick("now")
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actTrainSiegeTank(obs):
+    if actIsAvailable(obs, actions.FUNCTIONS.Train_SiegeTank_quick.id):
+        return actions.FUNCTIONS.Train_SiegeTank_quick("now")
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actTrainSCV(obs):
+    if actIsAvailable(obs, actions.FUNCTIONS.Train_SCV_quick.id):
+        return actions.FUNCTIONS.Train_SCV_quick("now")
+    else:
+        return actions.FUNCTIONS.no_op()
+
+
+def actTrainReaper(obs):
+    if actIsAvailable(obs, actions.FUNCTIONS.Train_Reaper_quick.id):
+        return actions.FUNCTIONS.Train_Reaper_quick("now")
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actTrainRaven(obs):
+    if actIsAvailable(obs, actions.FUNCTIONS.Train_Raven_quick.id):
+        return actions.FUNCTIONS.Train_Raven_quick("now")
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actTrainMedivac(obs):
+    if actIsAvailable(obs, actions.FUNCTIONS.Train_Medivac_quick.id):
+        return actions.FUNCTIONS.Train_Medivac_quick("now")
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actTrainMarauder(obs):
+    if actIsAvailable(obs, actions.FUNCTIONS.Train_Marauder_quick.id):
+        return actions.FUNCTIONS.Train_Marauder_quick("now")
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actTrainLiberator(obs):
+    if actIsAvailable(obs, actions.FUNCTIONS.Train_Liberator_quick.id):
+        return actions.FUNCTIONS.Train_Liberator_quick("now")
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actTrainHellion(obs):
+    if actIsAvailable(obs, actions.FUNCTIONS.Train_Hellion_quick.id):
+        return actions.FUNCTIONS.Train_Hellion_quick("now")
+    else:
+        return actions.FUNCTIONS.no_op()
+
+
+def actTrainHellbat(obs):
+    if actIsAvailable(obs, actions.FUNCTIONS.Train_Hellbat_quick.id):
+        return actions.FUNCTIONS.Train_Hellbat_quick("now")
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actTrainGhost(obs):
+    if actIsAvailable(obs, actions.FUNCTIONS.Train_Ghost_quick.id):
+        return actions.FUNCTIONS.Train_Ghost_quick("now")
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actTrainCyclone(obs):
+    if actIsAvailable(obs, actions.FUNCTIONS.Train_Cyclone_quick.id):
+        return actions.FUNCTIONS.Train_Cyclone_quick("now")
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actTrainBattlecruiser(obs):
+    if actIsAvailable(obs, actions.FUNCTIONS.Train_Battlecruiser_quick.id):
+        return actions.FUNCTIONS.Train_Battlecruiser_quick("now")
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actTrainBanshee(obs):
+    if actIsAvailable(obs, actions.FUNCTIONS.Train_Banshee_quick.id):
+        return actions.FUNCTIONS.Train_Banshee_quick("now")
+    else:
+        return actions.FUNCTIONS.no_op()
+
+
+
+def actTrainMarine(obs):
+    if actIsAvailable(obs, actions.FUNCTIONS.Train_Marine_quick.id):
+        return actions.FUNCTIONS.Train_Marine_quick("now")
+    else:
+        return actions.FUNCTIONS.no_op()
+
+
+def actBuildStarport(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Build_Starport_screen.id):
+        return actions.FUNCTIONS.Build_Starport_screen("now", [x, y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+
+def actBuildSensorTower(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Build_SensorTower_screen.id):
+        return actions.FUNCTIONS.Build_SensorTower_screen("now", [x, y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+
+def actBuildMissileTurret(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Build_MissileTurret_screen.id):
+        return actions.FUNCTIONS.Build_MissileTurret_screen("now", [x, y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+
+def actBuildGhostAcademy(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Build_GhostAcademy_screen.id):
+        return actions.FUNCTIONS.Build_GhostAcademy_screen("now", [x, y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+
+def actBuildFusionCore(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Build_FusionCore_screen.id):
+        return actions.FUNCTIONS.Build_FusionCore_screen("now", [x,y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actBuildFactory(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Build_Factory_screen.id):
+        return actions.FUNCTIONS.Build_Factory_screen("now", [x,y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actBuildCyberneticsCore(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Build_CyberneticsCore_screen.id):
+        return actions.FUNCTIONS.Build_CyberneticsCore_screen("now", [x,y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actBuildArmory(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Build_Armory_screen.id):
+        return actions.FUNCTIONS.Build_Armory_screen("now", [x,y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+
+def actBuildBunker(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Build_Bunker_screen.id):
+        return actions.FUNCTIONS.Build_Bunker_screen("now", [x,y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actBuildCommandCenter(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Build_CommandCenter_screen.id):
+        return actions.FUNCTIONS.Build_CommandCenter_screen("now", [x,y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actBuildEngineeringBay(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Build_EngineeringBay_screen.id):
+        return actions.FUNCTIONS.Build_EngineeringBay_screen("now", [x,y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actBuildRefinery(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Build_Refinery_screen.id):
+        return actions.FUNCTIONS.Build_Refinery_screen("now", [x,y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+
+def actBuildBarracks(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Build_Barracks_screen.id):
+        return actions.FUNCTIONS.Build_Barracks_screen("now", [x,y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actBuildSupplyDepot(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Build_SupplyDepot_screen.id):
+        return actions.FUNCTIONS.Build_SupplyDepot_screen("now", [x,y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+#TODO: Untested
+def actCancel(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Cancel_quick.id):
+        return actions.FUNCTIONS.Cancel_quick()
+    else:
+        return actions.FUNCTIONS.no_op()
+
+#I have no idea what this does, nor when it is available.
+#def actSmartScreen(obs, x, y):
+#    if actIsAvailable(obs, actions.FUNCTIONS.Smart_screen.id):
+#        return actions.FUNCTIONS.smart_screen([x,y])
+#    else:
+#        return actions.FUNCTIONS.no_op()
+
+
 def actSelectPoint(obs, x, y):
     if actIsAvailable(obs, actions.FUNCTIONS.select_point.id):
         return actions.FUNCTIONS.select_point("select", [x,y])
@@ -25,7 +255,7 @@ def actSelectPoint_toggle(obs, x, y):
         return actions.FUNCTIONS.select_point("toggle", [x,y])
     else:
         return actions.FUNCTIONS.no_op()
-def actSelectPoint_seletAllType(obs, x, y):
+def actSelectPoint_selectAllType(obs, x, y):
     if actIsAvailable(obs, actions.FUNCTIONS.select_point.id):
         return actions.FUNCTIONS.select_point("select_all_type", [x, y])
     else:
@@ -37,11 +267,33 @@ def actSelectPoint_addAllType(obs, x, y):
         return actions.FUNCTIONS.no_op()
 
 
+def actHarvestScreen(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Harvest_Gather_screen.id):
+        return actions.FUNCTIONS.Harvest_Gather_screen("now",(x,y))
+    else:
+        return actions.FUNCTIONS.no_op()
 
+def actStopQuick(obs):
+    if actIsAvailable(obs, actions.FUNCTIONS.Stop_quick.id):
+        return actions.FUNCTIONS.Stop_quick("now")
+    else:
+        return actions.FUNCTIONS.no_op()
 
 def actMoveCamera(obs, x, y):
     if actIsAvailable(obs, actions.FUNCTIONS.move_camera.id):
         return actions.FUNCTIONS.move_camera([x,y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actMoveMinimap(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Move_minimap.id):
+        return actions.FUNCTIONS.Move_minimap("now", (x, y))
+    else:
+        return actions.FUNCTIONS.no_op()
+
+def actMoveScreen(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.Move_screen.id):
+        return actions.FUNCTIONS.Move_screen("now", (x, y))
     else:
         return actions.FUNCTIONS.no_op()
 
@@ -208,6 +460,7 @@ class MarineAgent(base_agent.BaseAgent):
         super(MarineAgent, self).step(obs)
 
         a = [unit for unit in obs.observation.feature_units if unit.unit_type == units.Terran.SCV]
+        m = [unit for unit in obs.observation.feature_units if unit.unit_type == units.Terran.Marine]
 
         if len(a) > 0:
             scv = a[0]
@@ -215,13 +468,41 @@ class MarineAgent(base_agent.BaseAgent):
 
             if(self.i == 0):
                 self.i = self.i+1
-                return actions.FUNCTIONS.select_point("select_all_type", (scv.x,
-                                                                  scv.y))
+                return actions.FUNCTIONS.select_point("select_all_type", (scv.x,scv.y))
 
+        self.i = self.i+1
 
-        q = actSelectPoint(obs, 42, 42)
-        print(q)
-        return q
+        if self.i == 30:
+            return actBuildSupplyDepot(obs,5,5)
+        if self.i == 80:
+            return actBuildBarracks(obs,50,5)
+        if self.i == 179:
+            return actSelectPoint(obs, 50, 5)
+        if self.i == 180:
+            return actTrainMarine(obs)
+        if self.i == 181:
+            return actTrainMarine(obs)
+        if self.i == 182:
+            return actTrainMarine(obs)
+        if self.i == 183:
+            return actTrainMarine(obs)
+        if self.i == 270:
+            return actTrainMarine(obs)
+        if self.i == 271:
+            return actTrainMarine(obs)
+        if self.i == 272:
+            return actTrainMarine(obs)
+        if self.i == 273:
+            return actTrainMarine(obs)
+        if self.i == 380:
+            return actions.FUNCTIONS.select_point("select_all_type", (m[0].x, m[0].y))
+        if self.i == 381:
+            return actions.FUNCTIONS.select_point("add_all_type", (a[0].x, a[0].y))
+        if self.i == 382:
+            return actAttackMinimap(obs, 10,10)
+        #q = actHarvestScreen(obs, 20, 20)
+        #print(q)
+        #return q
 
 
         # exit()
