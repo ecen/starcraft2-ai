@@ -13,6 +13,38 @@ np.set_printoptions(threshold=np.inf)
 
 
 # -------------------------------------Raw Actions------------------------------------------------------------
+def actSelectPoint(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.select_point.id):
+        return actions.FUNCTIONS.select_point("select", [x,y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+#TODO: 'Sub' functions of actSelectPoint haven't been tested.
+def actSelectPoint_toggle(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.select_point.id):
+        return actions.FUNCTIONS.select_point("toggle", [x,y])
+    else:
+        return actions.FUNCTIONS.no_op()
+def actSelectPoint_seletAllType(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.select_point.id):
+        return actions.FUNCTIONS.select_point("select_all_type", [x, y])
+    else:
+        return actions.FUNCTIONS.no_op()
+def actSelectPoint_addAllType(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.select_point.id):
+        return actions.FUNCTIONS.select_point("add_all_type", [x, y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
+
+
+
+def actMoveCamera(obs, x, y):
+    if actIsAvailable(obs, actions.FUNCTIONS.move_camera.id):
+        return actions.FUNCTIONS.move_camera([x,y])
+    else:
+        return actions.FUNCTIONS.no_op()
+
 def actAttackScreen(obs, x, y):
     if actIsAvailable(obs, actions.FUNCTIONS.Attack_screen.id):
         return actions.FUNCTIONS.Attack_screen("now", (x, y))
@@ -187,7 +219,7 @@ class MarineAgent(base_agent.BaseAgent):
                                                                   scv.y))
 
 
-        q = actAttackMinimap(obs, 20, 20)
+        q = actSelectPoint(obs, 42, 42)
         print(q)
         return q
 
