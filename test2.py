@@ -23,7 +23,7 @@ EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.03
 EXPLORATION_DECAY = 0.995
 
-
+#Code for DQNSolver from https://github.com/gsurma/cartpole
 class DQNSolver:
 
     def __init__(self, observation_space, action_space):
