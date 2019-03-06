@@ -4,6 +4,7 @@ from pysc2.lib import actions, features, units
 import random
 import tensorflow as tf
 import numpy as np
+import os
 
 from collections import deque
 from keras.models import Sequential
@@ -13,17 +14,25 @@ from keras.optimizers import Adam
 from absl import app
 
 
+
+#<editor-fold desc="Network"
+####Most code for DQNSolver from https://github.com/gsurma/cartpole####
+#This is the network, structure is defined in __init__
+#Other hyper parameters are here
+
+#Future rewards discount
 GAMMA = 0.95
 LEARNING_RATE = 0.001
 
 MEMORY_SIZE = 1000000
+#Size of minibatches used during learning
 BATCH_SIZE = 20
-
+#Chance to take random action instead of using the network's output
+#Max = starting chance, is multiplied by decay after each experience replay
+#until it reaches min chance
 EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.03
-EXPLORATION_DECAY = 0.995
-
-#Code for DQNSolver from https://github.com/gsurma/cartpole
+EXPLORATION_DECAY = 0.9999
 class DQNSolver:
 
     def __init__(self, observation_space, action_space):
@@ -32,9 +41,10 @@ class DQNSolver:
         self.action_space = action_space
         self.memory = deque(maxlen=MEMORY_SIZE)
 
+        #Creation of network, topology stuff goes here
         self.model = Sequential()
-        self.model.add(Dense(24, input_shape=(observation_space,), activation="relu"))
-        self.model.add(Dense(24, activation="relu"))
+        self.model.add(Dense(32, input_shape=(observation_space,), activation="relu"))
+        self.model.add(Dense(16, activation="relu"))
         self.model.add(Dense(self.action_space, activation="linear"))
         self.model.compile(loss="mse", optimizer=Adam(lr=LEARNING_RATE))
 
@@ -62,12 +72,18 @@ class DQNSolver:
         self.exploration_rate *= EXPLORATION_DECAY
         self.exploration_rate = max(EXPLORATION_MIN, self.exploration_rate)
 
+    def save(self, name):
+        self.model.save(name+'.h5')
 
+#Size of input
 obsSpace = 4
+#Size of output /availble actions
 actSpace = 5
+#init of network
 dqn_solver = DQNSolver(obsSpace, actSpace)
 
-#<editor-fold desc="Helper functions"
+#</editor-fold>
+#<editor-fold> desc="Helper functions"
 # -------------------------------------Action Space-------------------------------------------------------------
 # -------------------------------------Combined Actions---------------------------------------------------------
 multiActions = []
@@ -580,48 +596,77 @@ def actSelectIdleWorker(obs):
         return actions.FUNCTIONS.no_op()
 
 class MarineAgent(base_agent.BaseAgent):
-    i = 0
     state = None
     action = None
     justSelectWorker = -1
 
     def step(self, obs):
         super(MarineAgent, self).step(obs)
-        global dqn_solver
+        global dqn_solver #Let python access the global variable dqn_solver
+
+        if obs.last():
+            score = obs.observation.score_cumulative.collected_minerals
+            compareResultsAndSave(score)
+
+        # <editor-fold> desc="Multistep action stuff, leave it alone"
         #This is the code that handles actions that require multiple steps, don't touch and leave at the top
         doingMultiAction = executeMultiAction(obs)
         if doingMultiAction != False:
             return doingMultiAction
-        #End of multistep action code
+        #</editor-fold>
+
+        # <editor-fold> desc="Read game data / input, handle it"
         newState = np.array([[getMinerals(obs), getFreeWorkers(obs), getSupplyFree(obs), self.justSelectWorker]])
 
-        #reward = ((getSupplyWorkers(obs)-(getFreeWorkers(obs)*1.2))/50)*(1+getMinerals(obs)/1000)
-        reward = self.justSelectWorker
+        #Reset justSelectWorker variable now that it has been read
         self.justSelectWorker = -1
 
-        newAction = dqn_solver.act(newState)
+        # </editor-fold>
+        # <editor-fold> desc="Things that should happen on first frame only"
         if obs.first():
+            #Currently saves the first state and do no_op.
+            #Reason behind this is that the learning requires info on a state and the following state
+            #And because we can't know the future state before reaching it(easily anyways), might as well
+            #use the last state and the current state instead.
             self.state = newState
-            self.action = newAction
+            self.action = 0
             return actions.FUNCTIONS.no_op()
+        # </editor-fold>
+        #<editor-fold> desc="Calculate reward"
+
+        reward = ((getSupplyWorkers(obs)-(getFreeWorkers(obs)*1.2))/50)#*(1)+getMinerals(obs)/5000)
+        #reward = self.justSelectWorker
 
 
-        print(reward)
+        #</editor-fold>
 
+
+        newAction = dqn_solver.act(newState) #Use network to get a new action
+
+        # <editor-fold> desc="Learning stuff"
+        #Save last state, last action, reward on this state, this state
+        #Same as state,action,reward,nextState but backwards
         dqn_solver.remember(self.state,self.action,reward,newState,False)
+
+        #Save current state and action that will be taken so that it can
+        #be used on the next frame.
         self.state = newState
         self.action = newAction
 
+        #Memory playback, teach network using random previous frames.
         dqn_solver.experience_replay()
+        # </editor-fold>
 
-        minerals = [unit for unit in obs.observation.feature_units
-                    if unit.unit_type == units.Neutral.MineralField]
 
+
+        # <editor-fold> desc="Action usage"
         if self.action == 4:
-            x = random.randrange(1,83)
-            y = random.randrange(1,83)
+            x = random.randrange(30,50)
+            y = random.randrange(8,25)
             return actBuildSupplyDepot(obs, x, y)
         elif self.action == 3:
+            minerals = [unit for unit in obs.observation.feature_units
+                        if unit.unit_type == units.Neutral.MineralField]
             rMineral = random.choice(minerals)
             return actHarvestScreen(obs,rMineral.x,rMineral.y)
         elif self.action == 2:
@@ -630,16 +675,35 @@ class MarineAgent(base_agent.BaseAgent):
 
         posActions = [actions.FUNCTIONS.no_op(),actMultiTrainSCV(obs)]
         return posActions[self.action]
+        # </editor-fold>
 
+        return actions.FUNCTIONS.no_op() #Left here so things don't crash when changing action usage
 
-        return actions.FUNCTIONS.no_op()
+savedNetworkScores = deque(maxlen=10)
 
+def compareResultsAndSave(score):
+        filePrefix="testNetwork"
+        if(len(savedNetworkScores) == 0 or max(savedNetworkScores) < score):
+            if len(savedNetworkScores) < savedNetworkScores.maxlen:
+                savedNetworkScores.append(score)
+                dqn_solver.save(filePrefix+str(score))
+            else:
+                poppedScore = savedNetworkScores.popleft()
+                savedNetworkScores.append(score)
+
+                os.remove(filePrefix+str(poppedScore)+'.h5')
+                dqn_solver.save(filePrefix+str(score))
+
+        print(savedNetworkScores)
 
 def main(unused_argv):
     agent = MarineAgent()
-
+    i = 0
     try:
+        # <editor-fold> desc="Loop running game sessions"
         while True:
+            i = i+1
+            print(i)
             with sc2_env.SC2Env(
                     map_name="CollectMineralsAndGas",
                     players=[sc2_env.Agent(sc2_env.Race.terran)],
@@ -653,12 +717,14 @@ def main(unused_argv):
 
                 timesteps = env.reset()
                 agent.reset()
-
+                # <editor-fold> desc="Loop running the actual game, frame by frame"
                 while True:
                     step_actions = [agent.step(timesteps[0])]
                     if timesteps[0].last():
                         break
                     timesteps = env.step(step_actions)
+                # </editor-fold>
+        #</editor-fold>
 
     except KeyboardInterrupt:
         pass
