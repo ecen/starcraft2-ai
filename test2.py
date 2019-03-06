@@ -32,7 +32,7 @@ BATCH_SIZE = 20
 #until it reaches min chance
 EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.03
-EXPLORATION_DECAY = 0.9999
+EXPLORATION_DECAY = 0.99
 class DQNSolver:
 
     def __init__(self, observation_space, action_space):
@@ -599,14 +599,16 @@ class MarineAgent(base_agent.BaseAgent):
     state = None
     action = None
     justSelectWorker = -1
+    freeWorkersOld = 12
 
     def step(self, obs):
         super(MarineAgent, self).step(obs)
         global dqn_solver #Let python access the global variable dqn_solver
-
         if obs.last():
-            score = obs.observation.score_cumulative.collected_minerals
-            compareResultsAndSave(score)
+            print(dqn_solver.exploration_rate)
+            if dqn_solver.exploration_rate < 0.06:
+                score = obs.observation.score_cumulative.collected_minerals
+                compareResultsAndSave(score)
 
         # <editor-fold> desc="Multistep action stuff, leave it alone"
         #This is the code that handles actions that require multiple steps, don't touch and leave at the top
@@ -634,7 +636,10 @@ class MarineAgent(base_agent.BaseAgent):
         # </editor-fold>
         #<editor-fold> desc="Calculate reward"
 
-        reward = ((getSupplyWorkers(obs)-(getFreeWorkers(obs)*1.2))/50)#*(1)+getMinerals(obs)/5000)
+        #reward = ((getSupplyWorkers(obs)-(getFreeWorkers(obs)*2))/50)#*(1)+getMinerals(obs)/5000)
+        reward = (abs(self.freeWorkersOld - getFreeWorkers(obs)))*(0.5+getSupplyWorkers(obs)/50)
+        self.freeWorkersOld = getFreeWorkers(obs)
+        print (reward)
         #reward = self.justSelectWorker
 
 
