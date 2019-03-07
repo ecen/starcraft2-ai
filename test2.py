@@ -34,21 +34,29 @@ BATCH_SIZE = 20
 EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.05
 EXPLORATION_DECAY = 0.9999
+
+loadNetworkOnlyExploit = True #TODO-----------------------------------------------------------Change this if you want to load a network that has already been trained.
 class DQNSolver:
 
     def __init__(self, observation_space, action_space):
-        self.exploration_rate = EXPLORATION_MAX
 
         self.action_space = action_space
         self.memory = deque(maxlen=MEMORY_SIZE)
+        global loadNetworkOnlyExploit
+        if not loadNetworkOnlyExploit:
+            self.exploration_rate = EXPLORATION_MAX
 
-        #Creation of network, topology stuff goes here
-        asd = keras.initializers.VarianceScaling(scale=2) #https://towardsdatascience.com/tutorial-double-deep-q-learning-with-dueling-network-architectures-4c1b3fb7f756
-        self.model = Sequential()
-        self.model.add(Dense(32, input_shape=(observation_space,), activation="relu", kernel_initializer=asd))
-        self.model.add(Dense(16, activation="relu", kernel_initializer=asd))
-        self.model.add(Dense(self.action_space, activation="linear", kernel_initializer=asd))
-        self.model.compile(loss="logcosh", optimizer=Adam(lr=LEARNING_RATE))
+            #Creation of network, topology stuff goes here
+            asd = keras.initializers.VarianceScaling(scale=2) #https://towardsdatascience.com/tutorial-double-deep-q-learning-with-dueling-network-architectures-4c1b3fb7f756
+            self.model = Sequential()
+            self.model.add(Dense(32, input_shape=(observation_space,), activation="relu", kernel_initializer=asd))
+            self.model.add(Dense(16, activation="relu", kernel_initializer=asd))
+            self.model.add(Dense(self.action_space, activation="linear", kernel_initializer=asd))
+            self.model.compile(loss="logcosh", optimizer=Adam(lr=LEARNING_RATE))
+        else:
+            self.exploration_rate = 0
+            self.model = keras.models.load_model("testNetwork4695.h5")          #TODO-----------------------------------------------------------Change this if you want to load another network that has already been trained.
+
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
@@ -651,9 +659,11 @@ class MarineAgent(base_agent.BaseAgent):
         newAction = dqn_solver.act(newState) #Use network to get a new action
 
         # <editor-fold> desc="Learning stuff"
+        global loadNetworkOnlyExploit
+        if not loadNetworkOnlyExploit:
         #Save last state, last action, reward on this state, this state
         #Same as state,action,reward,nextState but backwards
-        dqn_solver.remember(self.state,self.action,reward,newState,False)
+            dqn_solver.remember(self.state,self.action,reward,newState,False)
 
         #Save current state and action that will be taken so that it can
         #be used on the next frame.
@@ -661,7 +671,8 @@ class MarineAgent(base_agent.BaseAgent):
         self.action = newAction
 
         #Memory playback, teach network using random previous frames.
-        dqn_solver.experience_replay()
+        if not loadNetworkOnlyExploit:
+            dqn_solver.experience_replay()
         # </editor-fold>
 
 
