@@ -7,6 +7,7 @@ import numpy as np
 import os
 
 from collections import deque
+import keras
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import Adam
@@ -21,8 +22,8 @@ from absl import app
 #Other hyper parameters are here
 
 #Future rewards discount
-GAMMA = 0.95
-LEARNING_RATE = 0.001
+GAMMA = 0.99
+LEARNING_RATE = 0.00001
 
 MEMORY_SIZE = 1000000
 #Size of minibatches used during learning
@@ -31,8 +32,8 @@ BATCH_SIZE = 20
 #Max = starting chance, is multiplied by decay after each experience replay
 #until it reaches min chance
 EXPLORATION_MAX = 1.0
-EXPLORATION_MIN = 0.03
-EXPLORATION_DECAY = 0.99
+EXPLORATION_MIN = 0.05
+EXPLORATION_DECAY = 0.9999
 class DQNSolver:
 
     def __init__(self, observation_space, action_space):
@@ -42,11 +43,12 @@ class DQNSolver:
         self.memory = deque(maxlen=MEMORY_SIZE)
 
         #Creation of network, topology stuff goes here
+        asd = keras.initializers.VarianceScaling(scale=2) #https://towardsdatascience.com/tutorial-double-deep-q-learning-with-dueling-network-architectures-4c1b3fb7f756
         self.model = Sequential()
-        self.model.add(Dense(32, input_shape=(observation_space,), activation="relu"))
-        self.model.add(Dense(16, activation="relu"))
-        self.model.add(Dense(self.action_space, activation="linear"))
-        self.model.compile(loss="mse", optimizer=Adam(lr=LEARNING_RATE))
+        self.model.add(Dense(32, input_shape=(observation_space,), activation="relu", kernel_initializer=asd))
+        self.model.add(Dense(16, activation="relu", kernel_initializer=asd))
+        self.model.add(Dense(self.action_space, activation="linear", kernel_initializer=asd))
+        self.model.compile(loss="logcosh", optimizer=Adam(lr=LEARNING_RATE))
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
@@ -618,7 +620,7 @@ class MarineAgent(base_agent.BaseAgent):
         #</editor-fold>
 
         # <editor-fold> desc="Read game data / input, handle it"
-        newState = np.array([[getMinerals(obs), getFreeWorkers(obs), getSupplyFree(obs), self.justSelectWorker]])
+        newState = np.array([[(min(getMinerals(obs),100)-50)/50, getFreeWorkers(obs)/20, getSupplyFree(obs)/20, self.justSelectWorker]])
 
         #Reset justSelectWorker variable now that it has been read
         self.justSelectWorker = -1
