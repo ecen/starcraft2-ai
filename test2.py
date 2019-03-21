@@ -35,7 +35,7 @@ EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.05
 EXPLORATION_DECAY = 0.9999
 
-loadNetworkOnlyExploit = True #TODO-----------------------------------------------------------Change this if you want to load a network that has already been trained.
+loadNetworkOnlyExploit = False #TODO-----------------------------------------------------------Change this if you want to load a network that has already been trained.
 class DQNSolver:
 
     def __init__(self, observation_space, action_space):
@@ -649,7 +649,7 @@ class MarineAgent(base_agent.BaseAgent):
         #reward = ((getSupplyWorkers(obs)-(getFreeWorkers(obs)*2))/50)#*(1)+getMinerals(obs)/5000)
         reward = (abs(self.freeWorkersOld - getFreeWorkers(obs)))*(0.5+getSupplyWorkers(obs)/50)
         self.freeWorkersOld = getFreeWorkers(obs)
-        print (reward)
+        #print (reward)
         #reward = self.justSelectWorker
 
 
@@ -712,7 +712,9 @@ def compareResultsAndSave(score):
                 os.remove(filePrefix+str(poppedScore)+'.h5')
                 dqn_solver.save(filePrefix+str(score))
 
+        print("\n------- Network Scores -------")
         print(savedNetworkScores)
+        print("------------------------------\n")
 
 def main(unused_argv):
     agent = MarineAgent()
@@ -721,7 +723,7 @@ def main(unused_argv):
         # <editor-fold> desc="Loop running game sessions"
         while True:
             i = i+1
-            print(i)
+            print("Iteration " + str(i))
             with sc2_env.SC2Env(
                     map_name="CollectMineralsAndGas",
                     players=[sc2_env.Agent(sc2_env.Race.terran)],

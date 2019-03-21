@@ -62,7 +62,7 @@ print(test_images.shape)
 # plt.imshow(train_images[0])
 # plt.colorbar()
 # plt.grid(False)
-# plt.show()
+# plt.show()input
 
 # Scale colorvalue into range [0, 1].
 train_images = train_images / 255.0
