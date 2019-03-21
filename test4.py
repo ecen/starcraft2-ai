@@ -12,6 +12,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D
 from keras.optimizers import Adam
 from time import time
+from tensorflow.python.keras.callbacks import TensorBoard
 
 
 from absl import app
@@ -41,7 +42,7 @@ FRAME_WIDTH = 84
 FRAME_HEIGHT = 84
 STATE_LENGTH = 1
 
-
+tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
 loadNetworkOnlyExploit = False #TODO-----------------------------------------------------------Change this if you want to load a network that has already been trained.
 class DQNSolver:
 
@@ -98,7 +99,7 @@ class DQNSolver:
 
             q_values = self.model.predict(state)
             q_values[0][action] = q_update
-            self.model.fit(state, q_values, verbose=0)
+            self.model.fit(state, q_values, verbose=0,callbacks=[tensorboard])
         self.exploration_rate *= EXPLORATION_DECAY
         self.exploration_rate = max(EXPLORATION_MIN, self.exploration_rate)
 
@@ -648,7 +649,6 @@ class MarineAgent(base_agent.BaseAgent):
         if doingMultiAction != False:
             return doingMultiAction
         #</editor-fold>
-        print(getUnitsScreen(obs))
         # <editor-fold> desc="Read game data / input, handle it"
         
         
