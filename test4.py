@@ -9,10 +9,10 @@ import os
 from collections import deque
 import keras
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D
 from keras.optimizers import Adam
 from time import time
-from tensorflow.python.keras.callbacks import TensorBoard
+
 
 from absl import app
 
@@ -37,6 +37,10 @@ EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.05
 EXPLORATION_DECAY = 0.9999
 #tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
+FRAME_WIDTH = 84
+FRAME_HEIGHT = 84
+STATE_LENGTH = 1
+
 
 loadNetworkOnlyExploit = False #TODO-----------------------------------------------------------Change this if you want to load a network that has already been trained.
 class DQNSolver:
@@ -51,10 +55,20 @@ class DQNSolver:
 
             #Creation of network, topology stuff goes here
             asd = keras.initializers.VarianceScaling(scale=2) #https://towardsdatascience.com/tutorial-double-deep-q-learning-with-dueling-network-architectures-4c1b3fb7f756
+            # Creation of network, topology stuff goes here
             self.model = Sequential()
-            self.model.add(Dense(32, input_shape=(observation_space,), activation="relu", kernel_initializer=asd))
-            self.model.add(Dense(16, activation="relu", kernel_initializer=asd))
-            self.model.add(Dense(self.action_space, activation="linear", kernel_initializer=asd))
+            self.model.add(
+                Conv2D(64, 4, activation="relu",
+                    input_shape=(FRAME_WIDTH, FRAME_HEIGHT,STATE_LENGTH), data_format='channels_last'))
+            self.model.add(MaxPooling2D(pool_size=(2, 2)))
+            self.model.add(Conv2D(32, 2, activation="relu"))
+            self.model.add(MaxPooling2D(pool_size=(2, 2)))
+            self.model.add(Conv2D(32, 2, activation="relu"))
+            self.model.add(MaxPooling2D(pool_size=(2, 2)))
+            self.model.add(Flatten())
+            self.model.add(Dense(512, activation="relu"))
+            self.model.add(Dense(self.action_space))
+
             self.model.compile(loss="logcosh", optimizer=Adam(lr=LEARNING_RATE))
 
 
@@ -84,7 +98,7 @@ class DQNSolver:
 
             q_values = self.model.predict(state)
             q_values[0][action] = q_update
-            self.model.fit(state, q_values, verbose=0, callbacks=[tensorboard])
+            self.model.fit(state, q_values, verbose=0)
         self.exploration_rate *= EXPLORATION_DECAY
         self.exploration_rate = max(EXPLORATION_MIN, self.exploration_rate)
 
@@ -634,10 +648,12 @@ class MarineAgent(base_agent.BaseAgent):
         if doingMultiAction != False:
             return doingMultiAction
         #</editor-fold>
-
+        print(getUnitsScreen(obs))
         # <editor-fold> desc="Read game data / input, handle it"
-        newState = np.array([[(min(getMinerals(obs),100)-50)/50, getFreeWorkers(obs)/20, getSupplyFree(obs)/20, self.justSelectWorker]])
-
+        
+        
+        newState = np.array(getUnitsScreen(obs))
+        newState = newState.reshape(1,84,84,1)
         #Reset justSelectWorker variable now that it has been read
         self.justSelectWorker = -1
 
