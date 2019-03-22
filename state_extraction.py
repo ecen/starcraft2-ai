@@ -2,6 +2,11 @@ from sc2reaper import unit_extraction
 from sc2reaper import resources_extraction
 from sc2reaper import supply_extraction
 from google.protobuf.json_format import MessageToDict
+import bson
+import pickle
+import pysc2.lib.features as feat
+import numpy as np
+from pysc2.lib import named_array
 
 def getFactionsMinimap(obs):
     return obs.feature_layer_data.minimap_renders.player_relative
@@ -52,13 +57,14 @@ def get_state(observation):
     }
 
     state["minimap"] = {
-        "factions": MessageToDict(getFactionsMinimap(observation)),
-        "units":MessageToDict(getUnitsMini(observation))
+        "factions": bson.binary.Binary(pickle.dumps(getFactionsMinimap(obs), protocol=2))
+        #"factions": (getFactionsMinimap(observation)),
+        #"units":MessageToDict(getUnitsMini(observation))
     }
     state["screen"] = {
-        "factions": MessageToDict(getFactionsScreen(observation)),
-        "units":MessageToDict(getUnitsScreen(observation)),
-        "hp":MessageToDict(getHPScreen(observation))
+        "factions": bson.binary.Binary(pickle.dumps(getFactionsScreen(obs), protocol=2))
+        #"units":MessageToDict(getUnitsScreen(observation)),
+        #"hp":MessageToDict(getHPScreen(observation))
     }
 
     allied_units = unit_extraction.get_allied_units(observation)  # holds unit docs.
