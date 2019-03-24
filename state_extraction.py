@@ -57,12 +57,12 @@ def get_state(observation):
     }
 
     state["minimap"] = {
-        "factions": bson.binary.Binary(pickle.dumps(getFactionsMinimap(obs), protocol=2))
+        "factions": bson.binary.Binary(pickle.dumps(getFactionsMinimap(observation), protocol=2))
         #"factions": (getFactionsMinimap(observation)),
         #"units":MessageToDict(getUnitsMini(observation))
     }
     state["screen"] = {
-        "factions": bson.binary.Binary(pickle.dumps(getFactionsScreen(obs), protocol=2))
+        "factions": bson.binary.Binary(pickle.dumps(getFactionsScreen(observation), protocol=2))
         #"units":MessageToDict(getUnitsScreen(observation)),
         #"hp":MessageToDict(getHPScreen(observation))
     }
