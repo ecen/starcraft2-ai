@@ -7,23 +7,91 @@ import pickle
 import pysc2.lib.features as feat
 import numpy as np
 from pysc2.lib import named_array
+# -------------------------------------Input Space--------------------------------------------------------------
+# -------------------------------------SCREEN DATA GET FUNCTIONS------------------------------------------------
+# These return a 2d array of bytes, where the bytes represent different things
+# Getters for creep(zerg only), power(protoss only), shields(protoss only)
+def getHeightMinimap(obs):
+    return obs.feature_minimap.height_map
 
+
+def getVisiblityMinimap(obs):
+    return obs.feature_minimap.visibility_map
+
+
+def getCameraMinimap(obs):
+    return obs.feature_minimap.camera
+
+
+# Returns relative faction to player, 1 = player unit, 2 = hostile?, 3 = neutral, 0 = no unit
 def getFactionsMinimap(obs):
-    return obs.feature_layer_data.minimap_renders.player_relative
+    return obs.feature_minimap.player_relative
+
+
+# Returns true player numbers, compared to the relative version above.
+def getFactionsRawMinimap(obs):
+    return obs.feature_minimap.player_id
+
+
+def getSelectedMinimap(obs):
+    return obs.feature_minimap.selected
+
+
+def getHeightScreen(obs):
+    return obs.feature_screen.height_map
+
+
+def getVisibilityScreen(obs):
+    return obs.feature_screen.visibility_map
+
+
 def getFactionsScreen(obs):
-    return obs.feature_layer_data.renders.player_relative
-def getUnitsMini(obs):
-    return obs.feature_layer_data.minimap_renders.unit_type
+    return obs.feature_screen.player_relative
+
+
+def getFactionsRawScreen(obs):
+    return obs.feature_screen.player_id
+
+
 def getUnitsScreen(obs):
-    return obs.feature_layer_data.renders.unit_type
-def getHPScreen(obs):
-    return obs.feature_layer_data.renders.unit_hit_points
-
-
-
-def getUnitsScreen2(obs):
     return obs.feature_screen.unit_type
 
+
+def getSelectedScreen(obs):
+    return obs.feature_screen.selected
+
+
+def getHPScreen(obs):
+    return obs.feature_screen.unit_hit_points
+
+
+def getHPRatioScreen(obs):
+    return obs.feature_screen.unit_hit_points_ratio
+
+
+def getManaScreen(obs):
+    return obs.feature_screen.unit_energy
+
+
+def getManaRatioScreen(obs):
+    return obs.feature_screen.unit_energy_ratio
+
+
+def getDensityScreen(obs):
+    return obs.feature_screen.unit_density
+
+
+# Anti-aliased version of density
+def getDensityAAScreen(obs):
+    return obs.feature_screen.unit_density_aa
+
+
+# This is probably aoes, anyways
+def getAOEsScreen(obs):
+    return obs.feature_screen.effects
+
+
+# --------------------------------------END SCREEN GETS-------------------------------
 
 
 def get_state(observation, obsParent):
@@ -61,10 +129,10 @@ def get_state(observation, obsParent):
         "army": supply_extraction.get_army_supply(observation),
         "workers": supply_extraction.get_worker_supply(observation),
     }
-    asd = feat.Features(agent_interface_format=feat.AgentInterfaceFormat(feature_dimensions=feat.Dimensions(screen=84, minimap=64), use_feature_units=False))
+    featuresInstance = feat.Features(agent_interface_format=feat.AgentInterfaceFormat(feature_dimensions=feat.Dimensions(screen=84, minimap=64), use_feature_units=False))
 
 
-    asdfasdf = asd.transform_obs(obsParent)
+    pysc2Observation = featuresInstance.transform_obs(obsParent)
     #print(asdfasdf)
 
     state["minimap"] = {
@@ -74,7 +142,7 @@ def get_state(observation, obsParent):
     }
     state["screen"] = {
         #"factions": bson.binary.Binary(pickle.dumps(getFactionsScreen(observation), protocol=2))
-        "units": bson.binary.Binary(pickle.dumps(getUnitsScreen2(asdfasdf), protocol=2))
+        "units": bson.binary.Binary(pickle.dumps(getUnitsScreen(pysc2Observation), protocol=2))
         #"units":MessageToDict(getUnitsScreen(observation)),
         #"hp":MessageToDict(getHPScreen(observation))
     }
