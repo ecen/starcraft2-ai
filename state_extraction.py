@@ -15,7 +15,7 @@ def getHeightMinimap(obs):
     return obs.feature_minimap.height_map
 
 
-def getVisiblityMinimap(obs):
+def getVisibilityMinimap(obs):
     return obs.feature_minimap.visibility_map
 
 
@@ -136,25 +136,18 @@ def get_state(observation, obsParent):
     #print(asdfasdf)
 
     state["minimap"] = {
-        #"factions": bson.binary.Binary(pickle.dumps(getFactionsMinimap(observation), protocol=2))
-        #"factions": (getFactionsMinimap(observation)),
-        #"units":MessageToDict(getUnitsMini(observation))
+        "factions": bson.binary.Binary(pickle.dumps(getFactionsMinimap(pysc2Observation), protocol=2)),
+        "selected": bson.binary.Binary(pickle.dumps(getSelectedMinimap(pysc2Observation), protocol=2)),
+        "vision": bson.binary.Binary(pickle.dumps(getVisibilityMinimap(pysc2Observation), protocol=2))
     }
     state["screen"] = {
-        #"factions": bson.binary.Binary(pickle.dumps(getFactionsScreen(observation), protocol=2))
-        "units": bson.binary.Binary(pickle.dumps(getUnitsScreen(pysc2Observation), protocol=2))
-        #"units":MessageToDict(getUnitsScreen(observation)),
-        #"hp":MessageToDict(getHPScreen(observation))
+        "factions": bson.binary.Binary(pickle.dumps(getFactionsScreen(pysc2Observation), protocol=2)),
+        "units": bson.binary.Binary(pickle.dumps(getUnitsScreen(pysc2Observation), protocol=2)),
+        "hp": bson.binary.Binary(pickle.dumps(getHPScreen(pysc2Observation), protocol=2)),
+        "selected": bson.binary.Binary(pickle.dumps(getSelectedScreen(pysc2Observation), protocol=2)),
+        "height": bson.binary.Binary(pickle.dumps(getHeightScreen(pysc2Observation), protocol=2)),
+        "vision": bson.binary.Binary(pickle.dumps(getVisibilityScreen(pysc2Observation), protocol=2))
     }
-
-    allied_units = unit_extraction.get_allied_units(observation)  # holds unit docs.
-    unit_types = [unit["unit_type"] for unit in allied_units]
-
-    state["units"] = {
-        str(unit_type): [u for u in allied_units if u["unit_type"] == unit_type]
-        for unit_type in unit_types
-    }
-
     # Units in progress
 
     ## Adding buildings in progress
@@ -169,14 +162,6 @@ def get_state(observation, obsParent):
             state["units_in_progress"][str(unit_type)][
                 str(unit_tag)
             ] = units_in_progress[unit_type, unit_tag]
-
-
-    # Visible enemy units (enemy units on screen)
-    visible_enemy_units = unit_extraction.get_visible_enemy_units(observation)
-    state["visible_enemy_units"] = {
-        str(unit_type): visible_enemy_units[unit_type]
-        for unit_type in visible_enemy_units
-    }
 
     state["upgrades"] = [upgrade for upgrade in observation.raw_data.player.upgrade_ids]
 
