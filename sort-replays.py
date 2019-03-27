@@ -3,6 +3,7 @@ from shutil import copy, move
 import re
 import argparse
 import sys
+import os
 
 # This script requires [sc2reader](https://github.com/GraylinKim/sc2reader)
 # Install with `pip install sc2reader`.
@@ -43,9 +44,14 @@ def lockAndLoad():
 
       # Test the current replay
       if (len(replay.players) == 2 and lineup[0] == 'T' and lineup[1] == 'T' and
-              replay.release_string.startswith("4.7.1")):
+              replay.release_string.startswith("4.")):
          replaysAccepted += 1
-         move(path, args.acceptDest)  # If accepted
+         try:
+            os.mkdir(args.acceptDest + "/" + replay.release_string)
+         except:
+            #print("There already is a directory for " + replay.release_string)
+            pass
+         move(path, args.acceptDest + "/" + replay.release_string)  # If accepted
       else:
          move(path, args.declineDest)  # If failed
          pass
@@ -61,6 +67,8 @@ def lockAndLoad():
 while errors < 1:
    try:
       lockAndLoad()
+      break
    except:
-      print("There was an error.")
+      e = sys.exc_info()[0]
+      print("There was an error: " + e)
       errors += 1
