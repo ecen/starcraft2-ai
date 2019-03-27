@@ -20,7 +20,13 @@ def getHPScreen(obs):
     return obs.feature_layer_data.renders.unit_hit_points
 
 
-def get_state(observation):
+
+def getUnitsScreen2(obs):
+    return obs.feature_screen.unit_type
+
+
+
+def get_state(observation, obsParent):
     """
     This function returns a state, defined as a dict holding
         - a frame counter
@@ -55,14 +61,20 @@ def get_state(observation):
         "army": supply_extraction.get_army_supply(observation),
         "workers": supply_extraction.get_worker_supply(observation),
     }
+    asd = feat.Features(agent_interface_format=feat.AgentInterfaceFormat(feature_dimensions=feat.Dimensions(screen=84, minimap=64), use_feature_units=False))
+
+
+    asdfasdf = asd.transform_obs(obsParent)
+    #print(asdfasdf)
 
     state["minimap"] = {
-        "factions": bson.binary.Binary(pickle.dumps(getFactionsMinimap(observation), protocol=2))
+        #"factions": bson.binary.Binary(pickle.dumps(getFactionsMinimap(observation), protocol=2))
         #"factions": (getFactionsMinimap(observation)),
         #"units":MessageToDict(getUnitsMini(observation))
     }
     state["screen"] = {
-        "factions": bson.binary.Binary(pickle.dumps(getFactionsScreen(observation), protocol=2))
+        #"factions": bson.binary.Binary(pickle.dumps(getFactionsScreen(observation), protocol=2))
+        "units": bson.binary.Binary(pickle.dumps(getUnitsScreen2(asdfasdf), protocol=2))
         #"units":MessageToDict(getUnitsScreen(observation)),
         #"hp":MessageToDict(getHPScreen(observation))
     }

@@ -2,7 +2,6 @@
 
 from pymongo import MongoClient
 from pysc2 import run_configs
-
 from sc2reaper.sweeper import extract_all_info_once
 
 MATCH_UPS = ["TvT"]

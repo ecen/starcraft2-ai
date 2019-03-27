@@ -60,7 +60,7 @@ def extract_all_info_once(controller, replay_data, map_data, player_id):
 
     initial_frame = obs.observation.game_loop
 
-    states[str(initial_frame)] = get_state(obs.observation)
+    states[str(initial_frame)] = get_state(obs.observation, obs)
     actions[str(initial_frame)] = get_actions(obs.actions, abilities)
     scores[str(initial_frame)] = get_score(obs.observation)
 
@@ -71,7 +71,7 @@ def extract_all_info_once(controller, replay_data, map_data, player_id):
             obs = controller.observe()
             frame_id = obs.observation.game_loop
 
-            states[str(frame_id)] = get_state(obs.observation)
+            states[str(frame_id)] = get_state(obs.observation,obs)
             actions[str(frame_id)] = get_actions(obs.actions, abilities)
             scores[str(frame_id)] = get_score(obs.observation)
 
