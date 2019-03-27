@@ -11,9 +11,6 @@ from pysc2.lib import named_array
 # -------------------------------------SCREEN DATA GET FUNCTIONS------------------------------------------------
 # These return a 2d array of bytes, where the bytes represent different things
 # Getters for creep(zerg only), power(protoss only), shields(protoss only)
-def getHeightMinimap(obs):
-    return obs.feature_minimap.height_map
-
 
 def getVisibilityMinimap(obs):
     return obs.feature_minimap.visibility_map

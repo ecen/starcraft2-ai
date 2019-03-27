@@ -8,6 +8,10 @@ from sc2reaper.action_extraction import get_actions
 from sc2reaper.score_extraction import get_score
 from sc2reaper.state_extraction import get_state
 from sc2reaper.unit_extraction import get_unit_doc
+import bson
+import pickle
+import pysc2.lib.features as feat
+import numpy as np
 
 STEP_MULT = 12
 size = point.Point(84, 84)
@@ -15,6 +19,10 @@ minisize = point.Point(64, 64)
 interface = sc_pb.InterfaceOptions(
     raw=True, score=True, feature_layer=sc_pb.SpatialCameraSetup(width=24)
 )
+
+def getHeightMinimap(obs):
+    return obs.feature_minimap.height_map
+
 
 size.assign_to(interface.feature_layer.resolution)
 minisize.assign_to(interface.feature_layer.minimap_resolution)
@@ -52,7 +60,11 @@ def extract_all_info_once(controller, replay_data, map_data, player_id):
     except AssertionError:
         print("Wasn't able to determine a player's starting locations, weird")
 
-    minimap = {"minimap": {"height_map": MessageToDict(height_map_minimap)}}
+    featuresInstance = feat.Features(agent_interface_format=feat.AgentInterfaceFormat(feature_dimensions=feat.Dimensions(screen=84, minimap=64), use_feature_units=False))
+
+    pysc2Observation = featuresInstance.transform_obs(obs)
+
+    minimap = {"minimap": {"height": bson.binary.Binary(pickle.dumps(getHeightMinimap(pysc2Observation), protocol=2))}}
 
     actions = {}  # a dict of action dics which is to be merged to actual macro actions.
     states = {}
@@ -125,7 +137,11 @@ def extract_action_frames(controller, replay_data, map_data, player_id):
     except AssertionError:
         print("Wasn't able to determine a player's starting locations, weird")
 
-    minimap = {"minimap": {"height_map": MessageToDict(height_map_minimap)}}
+    featuresInstance = feat.Features(agent_interface_format=feat.AgentInterfaceFormat(feature_dimensions=feat.Dimensions(screen=84, minimap=64), use_feature_units=False))
+    pysc2Observation = featuresInstance.transform_obs(obs)
+    minimap = {"minimap": {"height": bson.binary.Binary(pickle.dumps(getHeightMinimap(pysc2Observation), protocol=2))}}
+
+    #minimap = {"minimap": {"height_map": MessageToDict(height_map_minimap)}}
 
     actions = {}  # a dict of action dics which is to be merged to actual macro actions.
     states = {}
