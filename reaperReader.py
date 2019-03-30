@@ -22,11 +22,11 @@ validationCount = 5 #The amount of replays that should be used only for validati
 #np.set_printoptions(threshold=sys.maxsize)   #Uncomment if you want to print entire np arrays.
 
 
-replays.create_index("replay_id")
-players.create_index("replay_id")
+replays.create_index("replay_name")
+players.create_index("replay_name")
 #This sorts the database I believe, so it might take some time to run these lines when running this for the first time.
-states.create_index([("replay_id", pymongo.ASCENDING), ("frame_id", pymongo.ASCENDING)])
-scores.create_index([("replay_id", pymongo.ASCENDING), ("frame_id", pymongo.ASCENDING)])
+states.create_index([("replay_name", pymongo.ASCENDING), ("frame_id", pymongo.ASCENDING)])
+scores.create_index([("replay_name", pymongo.ASCENDING), ("frame_id", pymongo.ASCENDING)])
 
 
 #Initialize trainingReplay_ids as all replay_ids.
@@ -52,7 +52,7 @@ def queryRandomState(replayIDs):
 
 def randomViableFrame(replayID):
     maxFrames = 0
-    for replay in replays.find({"replay_id":replayID}):
+    for replay in replays.find({"replay_name":replayID}):
         maxFrames = replay["game_duration_loops"]
         break;
     frameID = framesPerStep*(random.randint(0, maxFrames//framesPerStep))
@@ -61,11 +61,11 @@ def randomViableFrame(replayID):
 
 
 def queryState(replayID, frameID, playerID):
-    state = states.find({'replay_id':replayID, 'frame_id':frameID, 'player_id':playerID})
+    state = states.find({'replay_name':replayID, 'frame_id':frameID, 'player_id':playerID})
     #Unsure how this data structure looks, but this should pick out the first (should be only)
     #data thing, if it exists.
 
-    playerState = players.find({'replay_id':replayID, 'player_id':playerID})
+    playerState = players.find({'replay_name':replayID, 'player_id':playerID})
     winLoss = 0
     for data in playerState:
         winLoss = data["result"]
