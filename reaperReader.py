@@ -17,7 +17,7 @@ scores = db["scores"]
 #If nothing is returned from the DB (and it is running) then this might be wrong.
 framesPerStep = 12
 
-validationCount = 5 #The amount of replays that should be used only for validation
+validationCount = 3 #The amount of replays that should be used only for validation
 
 #np.set_printoptions(threshold=sys.maxsize)   #Uncomment if you want to print entire np arrays.
 
@@ -41,8 +41,10 @@ random.shuffle(trainingReplay_ids)
 for i in range (0,validationCount):
     validationReplay_ids.append(trainingReplay_ids.pop())
 
-print((validationReplay_ids))
-print((trainingReplay_ids))
+def getRandomTrainingState():
+    queryRandomState(trainingReplay_ids)
+def getRandomValidationState():
+    queryRandomState(validationReplay_ids)
 
 def queryRandomState(replayIDs):
     replayID = random.choice(replayIDs)
@@ -96,7 +98,6 @@ def queryState(replayID, frameID, playerID):
         concRaw = np.array([frameID, minerals,vespene,supTotal,supUsed,supArmy,supWorkers])
 
         return (concRaw, concMinimap, concScreen, winLoss)
-
 
 #print(queryState(replay_ids[0],12,1))
 #for replay_doc in replays.find():
