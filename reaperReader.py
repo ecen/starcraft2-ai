@@ -34,23 +34,23 @@ trainingReplay_ids = []
 validationReplay_ids = []
 for replay_doc in replays.find():
     trainingReplay_ids.append(replay_doc["replay_name"])
-    print (replay_doc["replay_name"])
 #Randomize the list
 random.shuffle(trainingReplay_ids)
-#Move some, (at random) to the validation set instead
+#Move some (at random due to shuffle) to the validation set instead
 for i in range (0,validationCount):
     validationReplay_ids.append(trainingReplay_ids.pop())
 
-def getRandomTrainingState():
-    queryRandomState(trainingReplay_ids)
-def getRandomValidationState():
-    queryRandomState(validationReplay_ids)
+
 
 def queryRandomState(replayIDs):
     replayID = random.choice(replayIDs)
     frameID = randomViableFrame(replayID)
     playerID = random.choice([1,2])
     return queryState(replayID, frameID, playerID)
+def getRandomTrainingState():
+    return queryRandomState(trainingReplay_ids)
+def getRandomValidationState():
+    return queryRandomState(validationReplay_ids)
 
 def randomViableFrame(replayID):
     maxFrames = 0
