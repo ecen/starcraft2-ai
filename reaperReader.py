@@ -56,6 +56,7 @@ def randomViableFrame(replayID):
     maxFrames = 0
     for replay in replays.find({"replay_name":replayID}):
         maxFrames = replay["game_duration_loops"]
+        maxFrames = maxFrames-120-maxFrames*0.005 #maxFrames is sometimes larger than (amount of recorded frames)*12, causing it to access data that doesn't exist
         break;
     frameID = framesPerStep*(random.randint(0, maxFrames//framesPerStep))
     return frameID
@@ -97,6 +98,11 @@ def queryState(replayID, frameID, playerID):
         concRaw = np.array([frameID, minerals,vespene,supTotal,supUsed,supArmy,supWorkers])
 
         return (concRaw, concMinimap, concScreen, winLoss)
+    print("____")
+    print(replayID)
+    print(frameID)
+    print(playerID)
+
 
 #print(queryState(replay_ids[0],12,1))
 #for replay_doc in replays.find():
