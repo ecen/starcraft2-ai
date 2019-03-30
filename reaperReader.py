@@ -17,6 +17,7 @@ scores = db["scores"]
 #If nothing is returned from the DB (and it is running) then this might be wrong.
 framesPerStep = 12
 
+validationCount = 5 #The amount of replays that should be used only for validation
 
 #np.set_printoptions(threshold=sys.maxsize)   #Uncomment if you want to print entire np arrays.
 
@@ -27,13 +28,24 @@ players.create_index("replay_id")
 states.create_index([("replay_id", pymongo.ASCENDING), ("frame_id", pymongo.ASCENDING)])
 scores.create_index([("replay_id", pymongo.ASCENDING), ("frame_id", pymongo.ASCENDING)])
 
-replay_ids = []
-for replay_doc in replays.find({}, {"replay_id": 1}):
-    replay_ids.append(replay_doc["replay_id"])
-    print(replay_doc["replay_id"])
 
-def queryRandomState():
-    replayID = random.choice(replay_ids)
+#Initialize trainingReplay_ids as all replay_ids.
+trainingReplay_ids = []
+validationReplay_ids = []
+for replay_doc in replays.find():
+    trainingReplay_ids.append(replay_doc["replay_name"])
+    print (replay_doc["replay_name"])
+#Randomize the list
+random.shuffle(trainingReplay_ids)
+#Move some, (at random) to the validation set instead
+for i in range (0,validationCount):
+    validationReplay_ids.append(trainingReplay_ids.pop())
+
+print((validationReplay_ids))
+print((trainingReplay_ids))
+
+def queryRandomState(replayIDs):
+    replayID = random.choice(replayIDs)
     frameID = randomViableFrame(replayID)
     playerID = random.choice([1,2])
     return queryState(replayID, frameID, playerID)
