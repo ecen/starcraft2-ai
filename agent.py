@@ -8,7 +8,7 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D
 from keras.optimizers import Adam
-
+import reaperReader as reader
 
 LEARNING_RATE = 0.00001
 
@@ -49,4 +49,29 @@ class Network:
 # init of network
 network = Network()
 
-network.model.
+
+def splitData(data): #TODO: Only does screen data right now. Rename to format when taking care of it all?
+    #   concMinimap = np.array([miniFactions,miniVision,miniSelected])
+    #   concScreen = np.array([screenFactions, screenVision, screenSelected, screenHp, screenUnits, screenHeight])
+    #   concRaw = np.array([frameID, minerals,vespene,supTotal,supUsed,supArmy,supWorkers])
+    #   return (concRaw, concMinimap, concScreen, winLoss)
+    return np.array([data[2],data[3]])
+
+
+def createTrainingBatch(batchSize):
+    batch = []
+    for i in range (0,batchSize):
+        batch.append(splitData(reader.getRandomTrainingState()))
+    return fromSplitDataToVectors(batch)
+
+def createValidationBatch(batchSize):
+    batch = []
+    for i in range(0, batchSize):
+        batch.append(splitData(reader.getRandomValidationState()))
+    return fromSplitDataToVectors(batch)
+
+def fromSplitDataToVectors(data):
+    return ([row[0] for row in data],[row[1] for row in data])
+
+input, target = createTrainingBatch(5)
+print(input)

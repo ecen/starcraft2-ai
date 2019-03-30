@@ -72,7 +72,6 @@ def queryState(replayID, frameID, playerID):
     for data in playerState:
         winLoss = data["result"]
 
-    print(winLoss)
     for data in state:
         # Minimap data
         miniFactions = pickle.loads(data["minimap"]["factions"])
