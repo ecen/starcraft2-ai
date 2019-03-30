@@ -23,6 +23,7 @@ framesPerStep = 12
 
 replays.create_index("replay_id")
 players.create_index("replay_id")
+#This sorts the database I believe, so it might take some time to run these lines when running this for the first time.
 states.create_index([("replay_id", pymongo.ASCENDING), ("frame_id", pymongo.ASCENDING)])
 scores.create_index([("replay_id", pymongo.ASCENDING), ("frame_id", pymongo.ASCENDING)])
 
@@ -51,6 +52,13 @@ def queryState(replayID, frameID, playerID):
     state = states.find({'replay_id':replayID, 'frame_id':frameID, 'player_id':playerID})
     #Unsure how this data structure looks, but this should pick out the first (should be only)
     #data thing, if it exists.
+
+    playerState = players.find({'replay_id':replayID, 'player_id':playerID})
+    winLoss = 0
+    for data in playerState:
+        winLoss = data["result"]
+
+    print(winLoss)
     for data in state:
         # Minimap data
         miniFactions = pickle.loads(data["minimap"]["factions"])
@@ -75,7 +83,7 @@ def queryState(replayID, frameID, playerID):
         concScreen = np.array([screenFactions, screenVision, screenSelected, screenHp, screenUnits, screenHeight])
         concRaw = np.array([frameID, minerals,vespene,supTotal,supUsed,supArmy,supWorkers])
 
-        return (concRaw, concMinimap, concScreen)
+        return (concRaw, concMinimap, concScreen, winLoss)
 
 
 #print(queryState(replay_ids[0],12,1))
