@@ -71,7 +71,7 @@ def createValidationBatch(batchSize):
     return fromSplitDataToVectors(batch)
 
 def fromSplitDataToVectors(data):
-    return ([row[0] for row in data],[row[1] for row in data])
+    return (np.array([row[0] for row in data]),np.array([row[1] for row in data]))
 
-input, target = createTrainingBatch(5)
-print(input)
+input, target = createTrainingBatch(10)
+network.model.fit(input, target, validation_split=0.05, epochs=150, batch_size=2)
