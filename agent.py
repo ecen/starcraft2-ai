@@ -17,9 +17,9 @@ BATCH_SIZE = 20
 # Chance to take random action instead of using the network's output
 # Max = starting chance, is multiplied by decay after each experience replay
 # until it reaches min chance
-FRAME_WIDTH = 84
-FRAME_HEIGHT = 84
-STATE_LENGTH = 1
+FRAME_WIDTH = 64
+FRAME_HEIGHT = 64
+STATE_LENGTH = 3
 
 class Network:
     def __init__(self):
@@ -54,8 +54,8 @@ def splitData(data): #TODO: Only does screen data right now. Rename to format wh
     #   concMinimap = np.array([miniFactions,miniVision,miniSelected])
     #   concScreen = np.array([screenFactions, screenVision, screenSelected, screenHp, screenUnits, screenHeight])
     #   concRaw = np.array([frameID, minerals,vespene,supTotal,supUsed,supArmy,supWorkers])
-    #   return (concRaw, concMinimap, concScreen, winLoss)
-    return np.array([data[2],data[3]])
+    #   (concRaw, concMinimap, concScreen, winLoss)
+    return np.array([data[1],data[3]])
 
 
 def createTrainingBatch(batchSize):
@@ -73,5 +73,8 @@ def createValidationBatch(batchSize):
 def fromSplitDataToVectors(data):
     return (np.array([row[0] for row in data]),np.array([row[1] for row in data]))
 
-input, target = createTrainingBatch(10)
-network.model.fit(input, target, validation_split=0.05, epochs=150, batch_size=2)
+for i in range(0,1000):
+    input, target = createTrainingBatch(4500)
+    input = np.moveaxis(input, 1, 3)
+    network.model.fit(input, target, validation_split=0.05, epochs=150, batch_size=30)
+    network.save(str(i))

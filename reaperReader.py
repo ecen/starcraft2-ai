@@ -17,7 +17,7 @@ scores = db["scores"]
 #If nothing is returned from the DB (and it is running) then this might be wrong.
 framesPerStep = 12
 
-validationCount = 3 #The amount of replays that should be used only for validation
+validationCount = 0 #The amount of replays that should be used only for validation
 
 #np.set_printoptions(threshold=sys.maxsize)   #Uncomment if you want to print entire np arrays.
 
