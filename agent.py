@@ -4,6 +4,7 @@ from pysc2.lib import actions, features, units
 
 from absl import app
 import numpy as np
+import keras
 
 np.set_printoptions(threshold=np.inf)
 
@@ -508,7 +509,7 @@ def getPlayerID(obs):
 
 # -----------------------------------END NUMERIC INPUTS-------------------------------
 # -----------------------------------END INPUT SPACE----------------------------------
-
+WR = keras.models.load_model("0.h5")
 class MarineAgent(base_agent.BaseAgent):
     i = 0
 
@@ -540,8 +541,9 @@ class MarineAgent(base_agent.BaseAgent):
         #q = actHarvestScreen(obs, 20, 20)
         #print(q)
         #return q
-
-
+        concMinimap = np.array([[getFactionsMinimap(obs), getVisiblityMinimap(obs), getSelectedMinimap(obs)]])
+        concMinimap = np.moveaxis(concMinimap, 1, 3)
+        print(WR.predict(concMinimap))
         # exit()
 
         return actions.FUNCTIONS.no_op()
