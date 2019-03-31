@@ -509,7 +509,7 @@ def getPlayerID(obs):
 
 # -----------------------------------END NUMERIC INPUTS-------------------------------
 # -----------------------------------END INPUT SPACE----------------------------------
-WR = keras.models.load_model("0.h5")
+WR = keras.models.load_model("9.h5")
 class MarineAgent(base_agent.BaseAgent):
     i = 0
 
@@ -520,6 +520,8 @@ class MarineAgent(base_agent.BaseAgent):
         if doingMultiAction != False:
             return doingMultiAction
         #End of multistep action code
+        if obs.first():
+            self.i=0
 
         self.i = self.i+1
         if self.i == 1:
