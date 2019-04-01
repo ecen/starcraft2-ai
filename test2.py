@@ -12,7 +12,6 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import Adam
 from time import time
-from tensorflow.python.keras.callbacks import TensorBoard
 
 from absl import app
 
@@ -36,7 +35,6 @@ BATCH_SIZE = 20
 EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.05
 EXPLORATION_DECAY = 0.9999
-#tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
 
 loadNetworkOnlyExploit = False #TODO-----------------------------------------------------------Change this if you want to load a network that has already been trained.
 class DQNSolver:
@@ -84,7 +82,7 @@ class DQNSolver:
 
             q_values = self.model.predict(state)
             q_values[0][action] = q_update
-            self.model.fit(state, q_values, verbose=0, callbacks=[tensorboard])
+            self.model.fit(state, q_values, verbose=0)
         self.exploration_rate *= EXPLORATION_DECAY
         self.exploration_rate = max(EXPLORATION_MIN, self.exploration_rate)
 

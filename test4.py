@@ -12,7 +12,6 @@ from keras.models import Sequential
 from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D
 from keras.optimizers import Adam
 from time import time
-from tensorflow.python.keras.callbacks import TensorBoard
 
 
 from absl import app
@@ -38,11 +37,11 @@ EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.05
 EXPLORATION_DECAY = 0.9999
 #tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
-FRAME_WIDTH = 84
-FRAME_HEIGHT = 84
-STATE_LENGTH = 1
+FRAME_WIDTH = 64
+FRAME_HEIGHT = 64
+STATE_LENGTH = 9
 
-tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
+
 loadNetworkOnlyExploit = False #TODO-----------------------------------------------------------Change this if you want to load a network that has already been trained.
 class DQNSolver:
 
@@ -55,19 +54,21 @@ class DQNSolver:
             self.exploration_rate = EXPLORATION_MAX
 
             #Creation of network, topology stuff goes here
-            asd = keras.initializers.VarianceScaling(scale=2) #https://towardsdatascience.com/tutorial-double-deep-q-learning-with-dueling-network-architectures-4c1b3fb7f756
+            ## Not used
+            #asd = keras.initializers.VarianceScaling(scale=2) #https://towardsdatascience.com/tutorial-double-deep-q-learning-with-dueling-network-architectures-4c1b3fb7f756
+            
             # Creation of network, topology stuff goes here
             self.model = Sequential()
             self.model.add(
-                Conv2D(64, 4, activation="relu",
-                    input_shape=(FRAME_WIDTH, FRAME_HEIGHT,STATE_LENGTH), data_format='channels_last'))
+                Conv2D(16, 4, activation="relu",
+                    input_shape=(STATE_LENGTH,FRAME_WIDTH, FRAME_HEIGHT), data_format='channels_first'))
             self.model.add(MaxPooling2D(pool_size=(2, 2)))
-            self.model.add(Conv2D(32, 2, activation="relu"))
+            self.model.add(Conv2D(16, 2, activation="relu"))
             self.model.add(MaxPooling2D(pool_size=(2, 2)))
-            self.model.add(Conv2D(32, 2, activation="relu"))
+            self.model.add(Conv2D(8, 2, activation="relu"))
             self.model.add(MaxPooling2D(pool_size=(2, 2)))
             self.model.add(Flatten())
-            self.model.add(Dense(512, activation="relu"))
+            self.model.add(Dense(64, activation="relu"))
             self.model.add(Dense(self.action_space))
 
             self.model.compile(loss="logcosh", optimizer=Adam(lr=LEARNING_RATE))
@@ -99,7 +100,7 @@ class DQNSolver:
 
             q_values = self.model.predict(state)
             q_values[0][action] = q_update
-            self.model.fit(state, q_values, verbose=0,callbacks=[tensorboard])
+            self.model.fit(state, q_values, verbose=0)
         self.exploration_rate *= EXPLORATION_DECAY
         self.exploration_rate = max(EXPLORATION_MIN, self.exploration_rate)
 
@@ -652,8 +653,16 @@ class MarineAgent(base_agent.BaseAgent):
         # <editor-fold> desc="Read game data / input, handle it"
         
         
-        newState = np.array(getUnitsScreen(obs))
-        newState = newState.reshape(1,84,84,1)
+        newState = np.array([[getUnitsScreen(obs), 
+                             getHPRatioScreen(obs),
+                             getSelectedMinimap(obs), 
+                             getFactionsScreen(obs),
+                             getVisibilityScreen(obs),
+                             getVisiblityMinimap(obs),
+                             getFactionsScreen(obs),
+                             getSelectedScreen(obs),
+                             getFactionsMinimap(obs)]])
+        #newState = newState.reshape(1,84,84,1)
         #Reset justSelectWorker variable now that it has been read
         self.justSelectWorker = -1
 
@@ -750,7 +759,7 @@ def main(unused_argv):
                     map_name="CollectMineralsAndGas",
                     players=[sc2_env.Agent(sc2_env.Race.terran)],
                     agent_interface_format=features.AgentInterfaceFormat(
-                        feature_dimensions=features.Dimensions(screen=84, minimap=64), use_feature_units=True),
+                        feature_dimensions=features.Dimensions(screen=64, minimap=64), use_feature_units=True),
                     step_mul=16,
                     game_steps_per_episode=0,
                     visualize=False) as env:
