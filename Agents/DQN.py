@@ -16,6 +16,9 @@ from time import time
 
 from absl import app
 
+# Log variables
+timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H.%M.%S")
+trainingStartTime = time()
 
 
 #<editor-fold desc="Network"
@@ -37,7 +40,7 @@ EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.05
 EXPLORATION_DECAY = 0.9999
 
-loadNetworkOnlyExploit = True #TODO True if loading trained network
+loadNetworkOnlyExploit = False #TODO True if loading trained network
 class DQNSolver:
     def __init__(self, observation_space, action_space):
 
@@ -620,9 +623,14 @@ class MarineAgent(base_agent.BaseAgent):
         global dqn_solver #Let python access the global variable dqn_solver
         if obs.last():
             print(dqn_solver.exploration_rate)
+            score = obs.observation.score_cumulative.collected_minerals
             if dqn_solver.exploration_rate < 0.06:
-                score = obs.observation.score_cumulative.collected_minerals
                 compareResultsAndSave(score)
+            # Log score to file
+            t1 = time() - trainingStartTime
+            logFile = open(timestamp + ".log","a+")
+            logFile.write("%d %.4f %7ds\n" % (score, dqn_solver.exploration_rate, t1))
+            logFile.close()
 
         # <editor-fold> desc="Multistep action stuff, leave it alone"
         #This is the code that handles actions that require multiple steps, don't touch and leave at the top
@@ -703,7 +711,6 @@ class MarineAgent(base_agent.BaseAgent):
 
 savedNetworkScores = deque(maxlen=10)
 
-timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H.%M.%S")
 def compareResultsAndSave(score):
     # Save network
     filePrefix="testNetwork"
@@ -718,11 +725,6 @@ def compareResultsAndSave(score):
             os.remove(filePrefix+str(poppedScore)+'.h5')
             dqn_solver.save(filePrefix+str(score))
     print(savedNetworkScores)
-    
-    # Log score to file
-    logFile = open(timestamp + ".log","a+")
-    logFile.write("%d\n" % (score))
-    logFile.close()
 
 def main(unused_argv):
     agent = MarineAgent()
