@@ -19,7 +19,7 @@ BATCH_SIZE = 20
 # until it reaches min chance
 FRAME_WIDTH = 64
 FRAME_HEIGHT = 64
-STATE_LENGTH = 3
+STATE_LENGTH = 9
 
 class Network:
     def __init__(self):
@@ -55,7 +55,7 @@ def splitData(data): #TODO: Only does screen data right now. Rename to format wh
     #   concScreen = np.array([screenFactions, screenVision, screenSelected, screenHp, screenUnits, screenHeight])
     #   concRaw = np.array([frameID, minerals,vespene,supTotal,supUsed,supArmy,supWorkers])
     #   (concRaw, concMinimap, concScreen, winLoss)
-    return np.array([data[1],data[3]])
+    return np.array([np.concatenate((data[1],data[2])),data[3]])
 
 
 def createTrainingBatch(batchSize):
@@ -76,5 +76,5 @@ def fromSplitDataToVectors(data):
 for i in range(0,1000):
     input, target = createTrainingBatch(4500)
     input = np.moveaxis(input, 1, 3)
-    network.model.fit(input, target, validation_split=0.05, epochs=150, batch_size=30)
+    network.model.fit(input, target, validation_split=0.05, epochs=1, batch_size=30)
     network.save(str(i))
