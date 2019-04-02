@@ -24,9 +24,6 @@ STATE_LENGTH = 9
 class Network:
     def __init__(self):
         # Creation of network, topology stuff goes here
-        asd = keras.initializers.VarianceScaling(
-                scale=2)  # https://towardsdatascience.com/tutorial-double-deep-q-learning-with-dueling-network-architectures-4c1b3fb7f756
-        # Creation of network, topology stuff goes here
         self.model = Sequential()
         self.model.add(
                 Conv2D(64, 4, activation="relu",
@@ -74,7 +71,11 @@ def fromSplitDataToVectors(data):
     return (np.array([row[0] for row in data]),np.array([row[1] for row in data]))
 
 for i in range(0,1000):
-    input, target = createTrainingBatch(4500)
+    input, target = createTrainingBatch(450)
+    valInput, valTarget = createValidationBatch(100)
+    #Swap ordering of dimensions so that keras can accept input.
+    valInput= np.moveaxis(valInput, 1, 3)
     input = np.moveaxis(input, 1, 3)
-    network.model.fit(input, target, validation_split=0.05, epochs=1, batch_size=30)
+
+    network.model.fit(input, target, validation_data=(valInput,valTarget), epochs=1, batch_size=30)
     network.save(str(i))
