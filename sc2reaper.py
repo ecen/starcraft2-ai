@@ -69,9 +69,9 @@ def ingest(replay_file):
             if player_info.player_result.result == 1:
                 result = 1
             elif player_info.player_result.result == 2:
-                result = -1
-            else:
                 result = 0
+            else:
+                result = -1
 
             player_doc = {
                 "replay_name": replay_file,
