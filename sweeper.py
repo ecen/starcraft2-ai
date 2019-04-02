@@ -14,7 +14,7 @@ import pysc2.lib.features as feat
 import numpy as np
 
 STEP_MULT = 12
-size = point.Point(84, 84)
+size = point.Point(64, 64)
 minisize = point.Point(64, 64)
 interface = sc_pb.InterfaceOptions(
     raw=True, score=True, feature_layer=sc_pb.SpatialCameraSetup(width=24)
