@@ -629,7 +629,7 @@ class MarineAgent(base_agent.BaseAgent):
             # Log score to file
             t1 = time() - trainingStartTime
             logFile = open(timestamp + ".log","a+")
-            logFile.write("%d %.4f %7ds\n" % (score, dqn_solver.exploration_rate, t1))
+            logFile.write("%4d %.4f %7ds\n" % (score, dqn_solver.exploration_rate, t1))
             logFile.close()
 
         # <editor-fold> desc="Multistep action stuff, leave it alone"
