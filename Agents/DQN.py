@@ -5,6 +5,7 @@ import random
 import tensorflow as tf
 import numpy as np
 import os
+import datetime
 
 from collections import deque
 import keras
@@ -36,9 +37,8 @@ EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.05
 EXPLORATION_DECAY = 0.9999
 
-loadNetworkOnlyExploit = False #TODO-----------------------------------------------------------Change this if you want to load a network that has already been trained.
+loadNetworkOnlyExploit = True #TODO True if loading trained network
 class DQNSolver:
-
     def __init__(self, observation_space, action_space):
 
         self.action_space = action_space
@@ -55,11 +55,9 @@ class DQNSolver:
             self.model.add(Dense(self.action_space, activation="linear", kernel_initializer=asd))
             self.model.compile(loss="logcosh", optimizer=Adam(lr=LEARNING_RATE))
 
-
-
         else:
             self.exploration_rate = 0
-            self.model = keras.models.load_model("testNetwork4695.h5")          #TODO-----------------------------------------------------------Change this if you want to load another network that has already been trained.
+            self.model = keras.models.load_model("testNetwork4845.h5")          #TODO Path of network to load if loading network
 
 
     def remember(self, state, action, reward, next_state, done):
@@ -705,20 +703,26 @@ class MarineAgent(base_agent.BaseAgent):
 
 savedNetworkScores = deque(maxlen=10)
 
+timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H.%M.%S")
 def compareResultsAndSave(score):
-        filePrefix="testNetwork"
-        if(len(savedNetworkScores) == 0 or max(savedNetworkScores) < score):
-            if len(savedNetworkScores) < savedNetworkScores.maxlen:
-                savedNetworkScores.append(score)
-                dqn_solver.save(filePrefix+str(score))
-            else:
-                poppedScore = savedNetworkScores.popleft()
-                savedNetworkScores.append(score)
+    # Save network
+    filePrefix="testNetwork"
+    if(len(savedNetworkScores) == 0 or max(savedNetworkScores) < score):
+        if len(savedNetworkScores) < savedNetworkScores.maxlen:
+            savedNetworkScores.append(score)
+            dqn_solver.save(filePrefix+str(score))
+        else:
+            poppedScore = savedNetworkScores.popleft()
+            savedNetworkScores.append(score)
 
-                os.remove(filePrefix+str(poppedScore)+'.h5')
-                dqn_solver.save(filePrefix+str(score))
-
-        print(savedNetworkScores)
+            os.remove(filePrefix+str(poppedScore)+'.h5')
+            dqn_solver.save(filePrefix+str(score))
+    print(savedNetworkScores)
+    
+    # Log score to file
+    logFile = open(timestamp + ".log","a+")
+    logFile.write("%d\n" % (score))
+    logFile.close()
 
 def main(unused_argv):
     agent = MarineAgent()
