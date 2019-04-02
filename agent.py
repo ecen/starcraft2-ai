@@ -71,7 +71,9 @@ class Network:
 network = Network()
 
 
-def splitData(data): #TODO: Only does screen data right now. Rename to format when taking care of it all?
+#Packages data from mongodb in a way that makes it easier to use with keras
+#Needs to be ran through fromSplitDataToVector first
+def splitData(data):
     #   concMinimap = np.array([miniFactions,miniVision,miniSelected])
     #   concScreen = np.array([screenFactions, screenVision, screenSelected, screenHp, screenUnits, screenHeight])
     #   concRaw = np.array([frameID, minerals,vespene,supTotal,supUsed,supArmy,supWorkers])
@@ -91,13 +93,15 @@ def createValidationBatch(batchSize):
         batch.append(splitData(reader.getRandomValidationState()))
     return fromSplitDataToVectors(batch)
 
-
+#Extracts each column from "splitData" function and makes them
+#into rows instead. Effectively converting from [replayID][type of data]
+#to [type of data][replayID]
 def fromSplitDataToVectors(data):
     return (np.array([row[0] for row in data]),np.array([row[1] for row in data]),np.array([row[2] for row in data]))
 
 for i in range(0,1000):
     numInput, target,input = createTrainingBatch(4500)
-    valNumInput, valTarget, valInput = createValidationBatch(1000)
+    valNumInput, valTarget, valInput = createValidationBatch(450)
     #Swap ordering of dimensions so that keras can accept input.
     valInput= np.moveaxis(valInput, 1, 3)
     input = np.moveaxis(input, 1, 3)
