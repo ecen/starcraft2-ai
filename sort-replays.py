@@ -44,16 +44,16 @@ def lockAndLoad():
 
       # Test the current replay
       if (len(replay.players) == 2 and lineup[0] == 'T' and lineup[1] == 'T' and
-              replay.release_string.startswith("4.")):
+              replay.release_string.startswith("4.8.3")):
          replaysAccepted += 1
          try:
             os.mkdir(args.acceptDest + "/" + replay.release_string)
          except:
             #print("There already is a directory for " + replay.release_string)
             pass
-         move(path, args.acceptDest + "/" + replay.release_string)  # If accepted
+         move(path, args.acceptDest + "/" + replay.release_string + "/" + replay.map_name + "-" + name)  # If accepted
       else:
-         move(path, args.declineDest)  # If failed
+         move(path, args.declineDest + "/" + replay.map_name + "-" + name)  # If failed
          pass
 
          # One replay sorted. Print status every now and then.
@@ -61,7 +61,6 @@ def lockAndLoad():
       if (replaysChecked % 10 == 0):
          print("%d/%d replays accepted. %d error(s)." %
                (replaysAccepted, replaysChecked, errors))
-
 
 # Start the script. Due to unpack errors, retrying requires reloading entirely.
 while errors < 1:
