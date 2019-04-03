@@ -570,6 +570,8 @@ def getAOEsScreen(obs):
 def getMinerals(obs):
     return obs.observation.player.minerals
 
+def getCumulativeMinerals(obs):
+    return obs.observation.score_cumulative.collected_minerals
 
 def getGas(obs):
     return obs.observation.player.vespene
@@ -667,7 +669,6 @@ class MarineAgent(base_agent.BaseAgent):
 
         #</editor-fold>
 
-
         newAction = dqn_solver.act(newState) #Use network to get a new action
 
         # <editor-fold> desc="Learning stuff"
@@ -676,6 +677,9 @@ class MarineAgent(base_agent.BaseAgent):
         #Save last state, last action, reward on this state, this state
         #Same as state,action,reward,nextState but backwards
             dqn_solver.remember(self.state,self.action,reward,newState,False)
+
+            if obs.last():
+                dqn_solver.remember(self.state,self.action,reward,None,True)
 
         #Save current state and action that will be taken so that it can
         #be used on the next frame.
