@@ -78,19 +78,24 @@ def splitData(data):
     #   concScreen = np.array([screenFactions, screenVision, screenSelected, screenHp, screenUnits, screenHeight])
     #   concRaw = np.array([frameID, minerals,vespene,supTotal,supUsed,supArmy,supWorkers])
     #   (concRaw, concMinimap, concScreen, winLoss)
-    return (data[0], data[3], np.concatenate((data[1],data[2])))
+    if data != None:
+        return (data[0], data[3], np.concatenate((data[1],data[2])))
 
-
+#TODO: refactor this and createValidationBatch into one method?
 def createTrainingBatch(batchSize):
     batch = []
     for i in range (0,batchSize):
-        batch.append(splitData(reader.getRandomTrainingState()))
+        temp = splitData(reader.getRandomTrainingState())
+        if temp != None:
+            batch.append(temp)
     return fromSplitDataToVectors(batch)
 
 def createValidationBatch(batchSize):
     batch = []
     for i in range(0, batchSize):
-        batch.append(splitData(reader.getRandomValidationState()))
+        temp = splitData(reader.getRandomValidationState())
+        if temp != None:
+            batch.append(temp)
     return fromSplitDataToVectors(batch)
 
 #Extracts each column from "splitData" function and makes them
@@ -105,6 +110,5 @@ for i in range(0,1000):
     #Swap ordering of dimensions so that keras can accept input.
     valInput= np.moveaxis(valInput, 1, 3)
     input = np.moveaxis(input, 1, 3)
-
     network.model.fit([numInput, input], target, validation_data=([valNumInput, valInput],valTarget), epochs=1, batch_size=50)
     network.save(str(i))
