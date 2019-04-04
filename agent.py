@@ -40,14 +40,15 @@ class Network:
         #self.model.compile(loss="mean_squared_error", optimizer=Adam(lr=LEARNING_RATE))
 
         convInput = keras.layers.Input(shape=(FRAME_WIDTH, FRAME_HEIGHT, STATE_LENGTH))
-        convMod = keras.layers.Conv2D(64,4,activation='relu',data_format='channels_last')(convInput)
+        convMod = keras.layers.Conv2D(32,(3,3),activation='relu',data_format='channels_last')(convInput)
         convMod = keras.layers.MaxPooling2D(pool_size=(2, 2))(convMod)
-        convMod = keras.layers.Conv2D(32, 2, activation='relu')(convMod)
+        convMod = keras.layers.Conv2D(64, (3,3), activation='relu')(convMod)
         convMod = keras.layers.MaxPooling2D(pool_size=(2, 2))(convMod)
-        convMod = keras.layers.Conv2D(32, 2, activation='relu')(convMod)
+        convMod = keras.layers.Conv2D(128, (1,1), activation='relu')(convMod)
         convMod = keras.layers.MaxPooling2D(pool_size=(2, 2))(convMod)
         convMod = keras.layers.Flatten()(convMod)
         convMod= keras.layers.Dense(512,activation='relu')(convMod)
+        convMod= keras.layers.Dense(56,activation='relu')(convMod)
         convMod = keras.Model(inputs=convInput, outputs=convMod)
 
         numInput = keras.layers.Input(shape=(NUMERIC_INPUT_LENGTH,))
@@ -62,7 +63,7 @@ class Network:
         mergeMod = keras.layers.Dense(1, activation='sigmoid')(mergeMod)
 
         self.model = keras.Model(inputs=[numMod.input,convMod.input], outputs=mergeMod)
-        self.model.compile(loss="mean_squared_error", optimizer=Adam(lr=LEARNING_RATE))
+        self.model.compile(loss="mean_absolute_error", optimizer=Adam(lr=LEARNING_RATE))
 
     def save(self, name):
         self.model.save(name + '.h5')
