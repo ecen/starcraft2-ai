@@ -111,5 +111,5 @@ for i in range(0,1000):
     #Swap ordering of dimensions so that keras can accept input.
     valInput= np.moveaxis(valInput, 1, 3)
     input = np.moveaxis(input, 1, 3)
-    network.model.fit([numInput, input], target, validation_data=([valNumInput, valInput],valTarget), epochs=1, batch_size=50)
-    network.save(str(i))
+    history = network.model.fit([numInput, input], target, validation_data=([valNumInput, valInput],valTarget), epochs=1, batch_size=50)
+    network.save(str(i)+"-L"+str(history.history['loss']) + "-VL"+str(history.history['val_loss']))
