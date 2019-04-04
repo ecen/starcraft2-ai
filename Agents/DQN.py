@@ -676,7 +676,7 @@ class MarineAgent(base_agent.BaseAgent):
         if not loadNetworkOnlyExploit:
         #Save last state, last action, reward on this state, this state
         #Same as state,action,reward,nextState but backwards
-            dqn_solver.remember(self.state,self.action,getCumulativeMinerals(obs),newState,False)
+            dqn_solver.remember(self.state,self.action,0,newState,False)
 
             if obs.last():
                 dqn_solver.remember(self.state,self.action,getCumulativeMinerals(obs),None,True)
