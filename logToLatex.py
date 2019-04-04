@@ -13,6 +13,7 @@ for line in logFile:
     score = words[0]
     time = words[2].replace("s", "")
     minutes = int(time)/60.0
-    print(score + " " + str(round(minutes, 2)) + "")
+    #print(score + " " + str(round(minutes, 2)) + "") # Time
+    print(score + " " + i + "") # Count episodes
     
 logFile.close()

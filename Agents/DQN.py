@@ -19,6 +19,7 @@ from absl import app
 # Log variables
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H.%M.%S")
 trainingStartTime = time()
+stepCounter = 0
 
 
 #<editor-fold desc="Network"
@@ -53,14 +54,15 @@ class DQNSolver:
             #Creation of network, topology stuff goes here
             asd = keras.initializers.VarianceScaling(scale=2) #https://towardsdatascience.com/tutorial-double-deep-q-learning-with-dueling-network-architectures-4c1b3fb7f756
             self.model = Sequential()
-            self.model.add(Dense(32, input_shape=(observation_space,), activation="relu", kernel_initializer=asd))
+            self.model.add(Dense(32, input_shape=(observation_space,), activation="relu", kernel_initializer=asd)) # TODO: Is asd a typo?
             self.model.add(Dense(16, activation="relu", kernel_initializer=asd))
-            self.model.add(Dense(self.action_space, activation="linear", kernel_initializer=asd))
+            self.model.add(Dense(self.action_space, activation="softmax", kernel_initializer=asd))
             self.model.compile(loss="logcosh", optimizer=Adam(lr=LEARNING_RATE))
 
         else:
             self.exploration_rate = 0
-            self.model = keras.models.load_model("testNetwork4845.h5")          #TODO Path of network to load if loading network
+            #TODO Path of network to load if loading network
+            self.model = keras.models.load_model("testNetwork4845.h5")
 
 
     def remember(self, state, action, reward, next_state, done):
@@ -70,6 +72,8 @@ class DQNSolver:
         if np.random.rand() < self.exploration_rate:
             return random.randrange(self.action_space)
         q_values = self.model.predict(state)
+        print('Q values: {}'.format(q_values))
+        #print('Selecting: {}'.format(np.argmax(q_values[0])))
         return np.argmax(q_values[0])
 
     def experience_replay(self):
@@ -110,6 +114,8 @@ class MarineAgent(base_agent.BaseAgent):
     def step(self, obs):
         super(MarineAgent, self).step(obs)
         global dqn_solver #Let python access the global variable dqn_solver
+        global stepCounter 
+        stepCounter += 1
         if obs.last():
             print(dqn_solver.exploration_rate)
             score = obs.observation.score_cumulative.collected_minerals
@@ -118,7 +124,7 @@ class MarineAgent(base_agent.BaseAgent):
             # Log score to file
             t1 = time() - trainingStartTime
             logFile = open(timestamp + ".log","a+")
-            logFile.write("%4d %.4f %7ds\n" % (score, dqn_solver.exploration_rate, t1))
+            logFile.write("score=%4d, explore=%.4f, time=%7ds, steps=%8d\n" % (score, dqn_solver.exploration_rate, t1, stepCounter))
             logFile.close()
 
         # <editor-fold> desc="Multistep action stuff, leave it alone"
