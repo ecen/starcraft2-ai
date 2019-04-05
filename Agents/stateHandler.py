@@ -109,8 +109,8 @@ def getIngameState(obs):
     supUsed = getSupply(obs)
     supArmy = getSupplyArmy(obs)
     supWorkers = getSupplyWorkers(obs)
-    frameID = getTimestep(obs)[0]
-    # FrameID
+    frameID = getFrame(obs)[0]
+
     concMinimap = np.array([miniFactions, miniVision, miniSelected])
     concScreen = np.array([screenFactions, screenVision, screenSelected, screenHp, screenUnits, screenHeight])
     concRaw = np.array([frameID, minerals, vespene, supTotal, supUsed, supArmy, supWorkers])
