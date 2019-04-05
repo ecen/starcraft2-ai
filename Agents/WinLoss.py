@@ -27,20 +27,6 @@ NUMERIC_INPUT_LENGTH = 7
 class Network:
     def __init__(self):
         # Creation of network, topology stuff goes here
-        #self.model = Sequential()
-        #self.model.add(
-        #        Conv2D(64, 4, activation="relu",
-        #               input_shape=(FRAME_WIDTH, FRAME_HEIGHT, STATE_LENGTH), data_format='channels_last'))
-        #self.model.add(MaxPooling2D(pool_size=(2, 2)))
-        #self.model.add(Conv2D(32, 2, activation="relu"))
-        #self.model.add(MaxPooling2D(pool_size=(2, 2)))
-        #self.model.add(Conv2D(32, 2, activation="relu"))
-        #self.model.add(MaxPooling2D(pool_size=(2, 2)))
-        #self.model.add(Flatten())
-        #self.model.add(Dense(512, activation="relu"))
-        #self.model.add(Dense(1, activation="tanh")) #1=win, 0=lose, not sure if it's a direct correlation to % win/loss
-        #self.model.compile(loss="mean_squared_error", optimizer=Adam(lr=LEARNING_RATE))
-
         convInput = keras.layers.Input(shape=(FRAME_WIDTH, FRAME_HEIGHT, STATE_LENGTH))
         convMod = keras.layers.Conv2D(32,(3,3),activation='relu',data_format='channels_last')(convInput)
         convMod = keras.layers.MaxPooling2D(pool_size=(2, 2))(convMod)
@@ -76,14 +62,14 @@ network = Network()
 
 
 
-#TODO: refactor this and createValidationBatch into one method?
+#TODO: Change this completely so that each epoch iterates over the entire dataset somehow
 def createTrainingBatch(batchSize):
     batch = []
     for i in range (0,batchSize):
         temp = reader.getRandomTrainingState()
         if temp != None:
             batch.append(temp)
-    return fromSplitDataToVectors(batch)
+    return transposeBatch(batch)
 
 def createValidationBatch(batchSize):
     batch = []
@@ -91,14 +77,16 @@ def createValidationBatch(batchSize):
         temp = reader.getRandomValidationState()
         if temp != None:
             batch.append(temp)
-    return fromSplitDataToVectors(batch)
+    return transposeBatch(batch)
 
 #Extracts each column from "splitData" function and makes them
 #into rows instead. Effectively converting from [replayID][type of data]
 #to [type of data][replayID]
-def fromSplitDataToVectors(data):
+def transposeBatch(data):
     return (np.array([row[0] for row in data]),np.array([row[1] for row in data]),np.array([row[2] for row in data]))
 
+
+#Train the network!
 for i in range(0,1000):
     numInput, target,input = createTrainingBatch(4500)
     valNumInput, valTarget, valInput = createValidationBatch(450)

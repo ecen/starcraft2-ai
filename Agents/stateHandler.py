@@ -42,12 +42,13 @@ for i in range (0,validationCount):
     validationReplay_ids.append(trainingReplay_ids.pop())
 
 
-
+#Given a list of replayIDs, returns a random state.
 def queryRandomState(replayIDs):
     replayID = random.choice(replayIDs)
     frameID = randomViableFrame(replayID)
     playerID = random.choice([1,2])
     return concatQueriedState(normalizeQueryState(queryState(replayID, frameID, playerID)))
+
 def getRandomTrainingState():
     return queryRandomState(trainingReplay_ids)
 def getRandomValidationState():
@@ -62,10 +63,9 @@ def randomViableFrame(replayID):
     frameID = framesPerStep*(random.randint(0, maxFrames//framesPerStep))
     return frameID
 
+#Changes values so that they are between the range [0,1], with the exception of things like minerals
+#which can go past 1.
 def normalizeQueryState(data):
-    #dataf = data[2].astype(float)
-    #print(np.true_divide(data[2][3].astype(float),3))
-    #exit()
     if data is None:
         return
     data[0] = data[0].astype(float)
@@ -88,10 +88,13 @@ def normalizeQueryState(data):
     data[2][5] = np.true_divide(data[2][5],255)
     return data
 
+#Returns (numericData, imageData)
 def getIngameNormalisedState(obs):
-    return normalizeQueryState(getIngameState(obs))
+    return concatIngameState(normalizeQueryState(readIngameState(obs)))
 
-def getIngameState(obs):
+#Reads the same data from given observation that is read from mongodb
+#with queryState.
+def readIngameState(obs):
     miniFactions = getFactionsMinimap(obs)
     miniVision = getVisiblityMinimap(obs)
     miniSelected = getSelectedMinimap(obs)
@@ -118,7 +121,7 @@ def getIngameState(obs):
     return [concRaw, concMinimap, concScreen]
 
 #Packages data from mongodb in a way that makes it easier to use with keras
-#Needs to be ran through fromSplitDataToVector first
+#Returns (numericData, winLoss, imageData)
 def concatQueriedState(data):
     #   concMinimap = np.array([miniFactions,miniVision,miniSelected])
     #   concScreen = np.array([screenFactions, screenVision, screenSelected, screenHp, screenUnits, screenHeight])
@@ -127,10 +130,14 @@ def concatQueriedState(data):
     if data != None:
         return (data[0], data[3], np.concatenate((data[1],data[2])))
 
+#Given [numeric, minimap, screen] data, returns
+#(numeric, minimap&screen), concatenates minimap and screen
+def concatIngameState(data):
+    return (data[0], np.concatenate((data[1],data[2])))
+
+#Queries mongoDB for the given state.
 def queryState(replayID, frameID, playerID):
     state = states.find({'replay_name':replayID, 'frame_id':frameID, 'player_id':playerID})
-    #Unsure how this data structure looks, but this should pick out the first (should be only)
-    #data thing, if it exists.
 
     playerState = players.find({'replay_name':replayID, 'player_id':playerID})
     winLoss = 0
@@ -163,21 +170,10 @@ def queryState(replayID, frameID, playerID):
         concRaw = np.array([frameID, minerals,vespene,supTotal,supUsed,supArmy,supWorkers])
 
         return [concRaw, concMinimap, concScreen, winLoss]
+    #This is reached if there is no data for the given replay, player and frame.
+    #This occurs at times due to sc2reaper not having saved frames all the way
+    #up to the "game_duration_loops" amount.
     print("____Failed at finding frame____")
     print(replayID)
     print(frameID)
     print(playerID)
-
-#print(queryState(replay_ids[0],12,1))
-#for replay_doc in replays.find():
-#    print(pickle.loads(replay_doc["map"]["minimap"]["height"]))
-
-#for replay_id in replay_ids:
-#    cursor = states.find({'replay_id':replay_id, 'player_id': 1, 'frame_id': 12})
-#    for state_doc in cursor:
-#        a = pickle.loads(state_doc["screen"]["units"])
-#        print(a)
-        #print(pickle.loads(state_doc["screen"]["factions"]))
-
-
-#states.find()
