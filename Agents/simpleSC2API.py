@@ -477,6 +477,8 @@ def getCumulativeMinerals(obs):
 def getGas(obs):
     return obs.observation.player.vespene
 
+def getFrame(obs):
+    return obs.observation.game_loop
 
 def getSupply(obs):
     return obs.observation.player.food_used
