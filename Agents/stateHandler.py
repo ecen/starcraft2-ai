@@ -47,7 +47,7 @@ def queryRandomState(replayIDs):
     replayID = random.choice(replayIDs)
     frameID = randomViableFrame(replayID)
     playerID = random.choice([1,2])
-    return normalizeQueryState(queryState(replayID, frameID, playerID))
+    return concatQueriedState(normalizeQueryState(queryState(replayID, frameID, playerID)))
 def getRandomTrainingState():
     return queryRandomState(trainingReplay_ids)
 def getRandomValidationState():
@@ -117,6 +117,15 @@ def getIngameState(obs):
 
     return [concRaw, concMinimap, concScreen]
 
+#Packages data from mongodb in a way that makes it easier to use with keras
+#Needs to be ran through fromSplitDataToVector first
+def concatQueriedState(data):
+    #   concMinimap = np.array([miniFactions,miniVision,miniSelected])
+    #   concScreen = np.array([screenFactions, screenVision, screenSelected, screenHp, screenUnits, screenHeight])
+    #   concRaw = np.array([frameID, minerals,vespene,supTotal,supUsed,supArmy,supWorkers])
+    #   (concRaw, concMinimap, concScreen, winLoss)
+    if data != None:
+        return (data[0], data[3], np.concatenate((data[1],data[2])))
 
 def queryState(replayID, frameID, playerID):
     state = states.find({'replay_name':replayID, 'frame_id':frameID, 'player_id':playerID})
@@ -128,6 +137,7 @@ def queryState(replayID, frameID, playerID):
     for data in playerState:
         winLoss = data["result"]
 
+    #Returns first point of data (should only be one anyways), if it exists.
     for data in state:
         # Minimap data
         miniFactions = pickle.loads(data["minimap"]["factions"])

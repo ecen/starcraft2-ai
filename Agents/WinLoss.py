@@ -74,21 +74,13 @@ class Network:
 network = Network()
 
 
-#Packages data from mongodb in a way that makes it easier to use with keras
-#Needs to be ran through fromSplitDataToVector first
-def splitData(data):
-    #   concMinimap = np.array([miniFactions,miniVision,miniSelected])
-    #   concScreen = np.array([screenFactions, screenVision, screenSelected, screenHp, screenUnits, screenHeight])
-    #   concRaw = np.array([frameID, minerals,vespene,supTotal,supUsed,supArmy,supWorkers])
-    #   (concRaw, concMinimap, concScreen, winLoss)
-    if data != None:
-        return (data[0], data[3], np.concatenate((data[1],data[2])))
+
 
 #TODO: refactor this and createValidationBatch into one method?
 def createTrainingBatch(batchSize):
     batch = []
     for i in range (0,batchSize):
-        temp = splitData(reader.getRandomTrainingState())
+        temp = reader.getRandomTrainingState()
         if temp != None:
             batch.append(temp)
     return fromSplitDataToVectors(batch)
@@ -96,7 +88,7 @@ def createTrainingBatch(batchSize):
 def createValidationBatch(batchSize):
     batch = []
     for i in range(0, batchSize):
-        temp = splitData(reader.getRandomValidationState())
+        temp = reader.getRandomValidationState()
         if temp != None:
             batch.append(temp)
     return fromSplitDataToVectors(batch)
