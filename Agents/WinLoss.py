@@ -10,8 +10,7 @@ from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D
 from keras.optimizers import Adam
 
 import sys
-sys.path.append("..")
-import reaperReader as reader
+import stateHandler as reader
 
 LEARNING_RATE = 0.00001
 
