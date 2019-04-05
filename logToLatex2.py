@@ -13,9 +13,9 @@ for line in logFile:
     score = words[0].replace("score=", "")
     explore = words[1].replace("explore=", "")
     time = words[2].replace("time=", "").replace("s", "")
-    steps = words[3].replace("steps=", "")
+    steps = words[3].replace("steps=", "").replace("\n", "")
     minutes = int(time)/60.0
     #print(score + " " + str(round(minutes, 2)) + "") # Time
-    print("{} {} {}".format(score, episodes, steps)) # Count episodes
+    print("{} {} {}".format(score, episodes, steps))
     
 logFile.close()

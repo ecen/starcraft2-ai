@@ -69,12 +69,12 @@ class DQNSolver:
         self.memory.append((state, action, reward, next_state, done))
 
     def act(self, state):
-        if np.random.rand() < self.exploration_rate:
-            return random.randrange(self.action_space)
+        #if np.random.rand() < self.exploration_rate:
+            #return random.randrange(self.action_space)
         q_values = self.model.predict(state)
         print('Q values: {}'.format(q_values))
         #print('Selecting: {}'.format(np.argmax(q_values[0])))
-        return np.argmax(q_values[0])
+        return getRandomWeightedIndex(q_values[0])
 
     def experience_replay(self):
         if len(self.memory) < BATCH_SIZE:
@@ -255,6 +255,17 @@ def main(unused_argv):
 
     except KeyboardInterrupt:
         pass
+
+def getRandomWeightedIndex(list):
+    total = 0
+    for l in list:
+        total += l
+    rand = total * random.random()
+    for i in range(0, len(list)):
+        l = list[i]
+        rand = rand - l;
+        if (rand <= 0.00001):
+            return i;
 
 
 if __name__ == "__main__":
