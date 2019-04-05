@@ -17,9 +17,9 @@ scores = db["scores"]
 #If nothing is returned from the DB (and it is running) then this might be wrong.
 framesPerStep = 12
 
-validationCount = 0 #The amount of replays that should be used only for validation
+validationCount = 12 #The amount of replays that should be used only for validation
 
-#np.set_printoptions(threshold=sys.maxsize)   #Uncomment if you want to print entire np arrays.
+np.set_printoptions(precision=20,threshold=sys.maxsize)   #Uncomment if you want to print entire np arrays.
 
 
 replays.create_index("replay_name")
@@ -46,7 +46,7 @@ def queryRandomState(replayIDs):
     replayID = random.choice(replayIDs)
     frameID = randomViableFrame(replayID)
     playerID = random.choice([1,2])
-    return queryState(replayID, frameID, playerID)
+    return normalizeQueryState(queryState(replayID, frameID, playerID))
 def getRandomTrainingState():
     return queryRandomState(trainingReplay_ids)
 def getRandomValidationState():
@@ -61,6 +61,31 @@ def randomViableFrame(replayID):
     frameID = framesPerStep*(random.randint(0, maxFrames//framesPerStep))
     return frameID
 
+def normalizeQueryState(data):
+    #dataf = data[2].astype(float)
+    #print(np.true_divide(data[2][3].astype(float),3))
+    #exit()
+    if data is None:
+        return
+    data[0] = data[0].astype(float)
+    data[1] = data[1].astype(float)
+    data[2] = data[2].astype(float)
+    data[0][0] = np.true_divide(data[0][0],20000)
+    data[0][1] = np.true_divide(data[0][1],5000)
+    data[0][2] = np.true_divide(data[0][2],5000)
+    data[0][3] = np.true_divide(data[0][3],200)
+    data[0][4] = np.true_divide(data[0][4],200)
+    data[0][5] = np.true_divide(data[0][5],200)
+    data[0][6] = np.true_divide(data[0][6],200)
+
+    data[1][0] = np.true_divide(data[1][0],4)
+    data[1][1] = np.true_divide(data[1][1],2)
+    data[2][0] = np.true_divide(data[2][0],3)
+    data[2][1] = np.true_divide(data[2][1],2)
+    data[2][3] = np.true_divide(data[2][3],3)
+    data[2][4] = np.true_divide(data[2][4],2000)
+    data[2][5] = np.true_divide(data[2][5],255)
+    return data
 
 
 def queryState(replayID, frameID, playerID):
@@ -97,12 +122,11 @@ def queryState(replayID, frameID, playerID):
         concScreen = np.array([screenFactions, screenVision, screenSelected, screenHp, screenUnits, screenHeight])
         concRaw = np.array([frameID, minerals,vespene,supTotal,supUsed,supArmy,supWorkers])
 
-        return (concRaw, concMinimap, concScreen, winLoss)
-    print("____")
+        return [concRaw, concMinimap, concScreen, winLoss]
+    print("____Failed at finding frame____")
     print(replayID)
     print(frameID)
     print(playerID)
-
 
 #print(queryState(replay_ids[0],12,1))
 #for replay_doc in replays.find():
