@@ -56,7 +56,7 @@ class DQNSolver:
             self.model = Sequential()
             self.model.add(Dense(32, input_shape=(observation_space,), activation="relu", kernel_initializer=asd)) # TODO: Is asd a typo?
             self.model.add(Dense(16, activation="relu", kernel_initializer=asd))
-            self.model.add(Dense(self.action_space, activation="softmax", kernel_initializer=asd))
+            self.model.add(Dense(self.action_space, activation="linear", kernel_initializer=asd))
             self.model.compile(loss="logcosh", optimizer=Adam(lr=LEARNING_RATE))
 
         else:
@@ -69,12 +69,13 @@ class DQNSolver:
         self.memory.append((state, action, reward, next_state, done))
 
     def act(self, state):
-        #if np.random.rand() < self.exploration_rate:
-            #return random.randrange(self.action_space)
+        if np.random.rand() < self.exploration_rate:
+            return random.randrange(self.action_space)
         q_values = self.model.predict(state)
-        print('Q values: {}'.format(q_values))
+        #print('Q values: {}'.format(q_values))
+        return np.argmax(q_values[0])
         #print('Selecting: {}'.format(np.argmax(q_values[0])))
-        return getRandomWeightedIndex(q_values[0])
+        #return getRandomWeightedIndex(q_values[0])
 
     def experience_replay(self):
         if len(self.memory) < BATCH_SIZE:
@@ -124,7 +125,7 @@ class MarineAgent(base_agent.BaseAgent):
             # Log score to file
             t1 = time() - trainingStartTime
             logFile = open(timestamp + ".log","a+")
-            logFile.write("score=%4d, explore=%.4f, time=%7ds, steps=%8d\n" % (score, dqn_solver.exploration_rate, t1, stepCounter))
+            logFile.write("score=%4d, explore=%.4f, time=%7ds, steps=%8d, supply=%2d\n" % (score, dqn_solver.exploration_rate, t1, stepCounter, getSupplyWorkers(obs)))
             logFile.close()
 
         # <editor-fold> desc="Multistep action stuff, leave it alone"
@@ -169,10 +170,10 @@ class MarineAgent(base_agent.BaseAgent):
         if not loadNetworkOnlyExploit:
         #Save last state, last action, reward on this state, this state
         #Same as state,action,reward,nextState but backwards
-            dqn_solver.remember(self.state,self.action,0,newState,False)
+            dqn_solver.remember(self.state,self.action,reward,newState,False)
 
             if obs.last():
-                dqn_solver.remember(self.state,self.action,getCumulativeMinerals(obs),None,True)
+                dqn_solver.remember(self.state,self.action,reward,None,True)
 
         #Save current state and action that will be taken so that it can
         #be used on the next frame.
@@ -259,11 +260,11 @@ def main(unused_argv):
 def getRandomWeightedIndex(list):
     total = 0
     for l in list:
-        total += l
+        total += max(l, 0)
     rand = total * random.random()
     for i in range(0, len(list)):
         l = list[i]
-        rand = rand - l;
+        rand = rand - max(l, 0);
         if (rand <= 0.00001):
             return i;
 
