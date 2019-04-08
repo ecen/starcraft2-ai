@@ -47,3 +47,34 @@ data = load("data/dqnBoltzmannNaiveLinear.csv")
 scores=data(1:n,1);
 plot([1:n], scores, '.');
 lsline;
+
+%% Continous worker rewards, with supplies in data
+data = load("data/dqnWorkerRewardSupply.csv")
+[n, p] = size(data);
+scores=data(1:n,1);
+supply=data(1:n,4);
+
+scatter([1:n], scores, 20, supply, 'filled')
+colorbar
+
+lsline;
+
+%% Continous worker rewards, with pre-determined supply depot locations
+data = load("data/dqnWorkerRewardSupplyLocations.csv")
+[n, p] = size(data);
+m = n
+scores=data(1:m,1);
+supply=data(1:m,4);
+
+scatter([1:m], scores, 20, supply, 'filled')
+colorbar
+
+%% Random action
+data = load("data/dqnRandom.csv")
+[n, p] = size(data);
+m = n
+scores=data(1:m,1);
+supply=data(1:m,4);
+
+scatter([1:m], scores, 20, supply, 'filled')
+colorbar

@@ -21,6 +21,12 @@ timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H.%M.%S")
 trainingStartTime = time()
 stepCounter = 0
 
+SUPPLY_LOCATIONS = [
+        (30, 8), (34, 8), (38, 8), (42, 8), (46, 8), (50, 8),
+        (30, 12), (34, 12), (38, 12), (42, 12), (46, 12), (50, 12), 
+        (30, 16), (34, 16), (38, 16), (42, 16), (46, 16), (50, 16), 
+        (30, 20), (34, 20), (38, 20), (42, 20), (46, 20), (50, 20)
+    ]
 
 #<editor-fold desc="Network"
 ####Most code for DQNSolver from https://github.com/gsurma/cartpole####
@@ -69,11 +75,11 @@ class DQNSolver:
         self.memory.append((state, action, reward, next_state, done))
 
     def act(self, state):
-        if np.random.rand() < self.exploration_rate:
+        #if np.random.rand() < self.exploration_rate:
             return random.randrange(self.action_space)
-        q_values = self.model.predict(state)
+        #q_values = self.model.predict(state)
         #print('Q values: {}'.format(q_values))
-        return np.argmax(q_values[0])
+        #return np.argmax(q_values[0])
         #print('Selecting: {}'.format(np.argmax(q_values[0])))
         #return getRandomWeightedIndex(q_values[0])
 
@@ -111,6 +117,7 @@ class MarineAgent(base_agent.BaseAgent):
     action = None
     justSelectWorker = -1
     freeWorkersOld = 12
+    nextSupplyNr = 0
 
     def step(self, obs):
         super(MarineAgent, self).step(obs)
@@ -125,7 +132,7 @@ class MarineAgent(base_agent.BaseAgent):
             # Log score to file
             t1 = time() - trainingStartTime
             logFile = open(timestamp + ".log","a+")
-            logFile.write("score=%4d, explore=%.4f, time=%7ds, steps=%8d, supply=%2d\n" % (score, dqn_solver.exploration_rate, t1, stepCounter, getSupplyWorkers(obs)))
+            logFile.write("score=%4d, explore=%.4f, time=%7ds, steps=%8d, supplyWorkers=%2d\n" % (score, dqn_solver.exploration_rate, t1, stepCounter, getSupplyWorkers(obs)))
             logFile.close()
 
         # <editor-fold> desc="Multistep action stuff, leave it alone"
@@ -189,8 +196,13 @@ class MarineAgent(base_agent.BaseAgent):
 
         # <editor-fold> desc="Action usage"
         if self.action == 4:
-            x = random.randrange(30,50)
-            y = random.randrange(8,25)
+            #x = random.randrange(30,50)
+            #y = random.randrange(8,25)
+            x = SUPPLY_LOCATIONS[self.nextSupplyNr][0]
+            y = SUPPLY_LOCATIONS[self.nextSupplyNr][1]
+            self.nextSupplyNr += 1
+            if (self.nextSupplyNr >= len(SUPPLY_LOCATIONS)):
+                self.nextSupplyNr = 0
             return actBuildSupplyDepot(obs, x, y)
         elif self.action == 3:
             minerals = [unit for unit in obs.observation.feature_units

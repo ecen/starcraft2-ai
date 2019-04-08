@@ -14,8 +14,9 @@ for line in logFile:
     explore = words[1].replace("explore=", "")
     time = words[2].replace("time=", "").replace("s", "")
     steps = words[3].replace("steps=", "").replace("\n", "")
+    supplyWorkers = words[4].replace("supplyWorkers=", "").replace("\n", "")
     minutes = int(time)/60.0
     #print(score + " " + str(round(minutes, 2)) + "") # Time
-    print("{} {} {}".format(score, episodes, steps))
+    print("{} {} {} {}".format(score, episodes, steps, supplyWorkers))
     
 logFile.close()
