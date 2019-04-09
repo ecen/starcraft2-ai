@@ -72,9 +72,27 @@ colorbar
 %% Random action
 data = load("data/dqnRandom.csv")
 [n, p] = size(data);
-m = n
+m = 800
 scores=data(1:m,1);
 supply=data(1:m,4);
 
 scatter([1:m], scores, 20, supply, 'filled')
 colorbar
+
+%% Random vs Continous 
+data1 = load("data/dqnRandom.csv")
+data2 = load("data/dqnWorkerRewardSupplyLocations.csv")
+[n1, p1] = size(data1);
+[n2, p2] = size(data2);
+m = min(n1, n2);
+
+scores1=data1(1:m,1);
+workers1=data1(1:m,4)
+scores2=data2(1:m,1);
+workers2=data2(1:m,4)
+
+clf
+hold on
+scatter([1:m], scores1, 20, 'filled', 'MarkerFaceColor', [0 0.4470 0.7410])
+scatter([1:m], scores2, 20, 'filled', 'MarkerFaceColor', [0.9290 0.6940 0.1250])
+hold off
