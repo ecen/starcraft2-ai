@@ -84,6 +84,7 @@ class DQNSolver:
 
             q_values = self.model.predict(state)
             q_values[0][action] = q_update
+            print('Q_table: {} action: {} Q_update = {} state: {} state_next: {}'.format(q_values,action,q_update,state,state_next))
             self.model.fit(state, q_values, verbose=0)
         self.exploration_rate *= EXPLORATION_DECAY
         self.exploration_rate = max(EXPLORATION_MIN, self.exploration_rate)

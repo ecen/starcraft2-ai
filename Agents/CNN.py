@@ -40,6 +40,7 @@ EXPLORATION_DECAY = 0.9999
 FRAME_WIDTH = 64
 FRAME_HEIGHT = 64
 STATE_LENGTH = 9
+NUMERIC_INPUT_LENGTH = 7
 
 
 loadNetworkOnlyExploit = False #TODO-----------------------------------------------------------Change this if you want to load a network that has already been trained.
@@ -58,22 +59,45 @@ class DQNSolver:
             #asd = keras.initializers.VarianceScaling(scale=2) #https://towardsdatascience.com/tutorial-double-deep-q-learning-with-dueling-network-architectures-4c1b3fb7f756
             
             # Creation of network, topology stuff goes here
-            self.model = Sequential()
-            self.model.add(
-                Conv2D(16, 4, activation="relu",
-                    input_shape=(STATE_LENGTH,FRAME_WIDTH, FRAME_HEIGHT), data_format='channels_first'))
-            self.model.add(MaxPooling2D(pool_size=(2, 2)))
-            self.model.add(Conv2D(16, 2, activation="relu"))
-            self.model.add(MaxPooling2D(pool_size=(2, 2)))
-            self.model.add(Conv2D(8, 2, activation="relu"))
-            self.model.add(MaxPooling2D(pool_size=(2, 2)))
-            self.model.add(Flatten())
-            self.model.add(Dense(64, activation="relu"))
-            self.model.add(Dense(self.action_space))
+            #self.model = Sequential()
+            #self.model.add(
+                #Conv2D(16, 4, activation="relu",
+                 #   input_shape=(STATE_LENGTH,FRAME_WIDTH, FRAME_HEIGHT), data_format='channels_first'))
+            #self.model.add(MaxPooling2D(pool_size=(2, 2)))
+            #self.model.add(Conv2D(16, 2, activation="relu"))
+            #self.model.add(MaxPooling2D(pool_size=(2, 2)))
+            #self.model.add(Conv2D(8, 2, activation="relu"))
+            #self.model.add(MaxPooling2D(pool_size=(2, 2)))
+            #self.model.add(Flatten())
+            #self.model.add(Dense(64, activation="relu"))
+            #self.model.add(Dense(self.action_space))
 
-            self.model.compile(loss="logcosh", optimizer=Adam(lr=LEARNING_RATE))
+            #self.model.compile(loss="logcosh", optimizer=Adam(lr=LEARNING_RATE))
 
+            convInput = keras.layers.Input(shape=(STATE_LENGTH,FRAME_WIDTH,FRAME_HEIGHT))
+            convMod = keras.layers.Conv2D(64,4,activation='relu', data_format='channels_first')(convInput)
+            convMod = keras.layers.MaxPooling2D(pool_size=(2,2))(convMod)
+            convMod = keras.layers.Conv2D(32, 2, activation='relu')(convMod)
+            convMod = keras.layers.MaxPooling2D(pool_size=(2, 2))(convMod)
+            convMod = keras.layers.Conv2D(32, 2, activation='relu')(convMod)
+            convMod = keras.layers.MaxPooling2D(pool_size=(2, 2))(convMod)
+            convMod = keras.layers.Flatten()(convMod)
+            convMod = keras.layers.Dense(512,activation='relu')(convMod)
+            convMod = keras.Model(inputs=convInput, outputs=convMod)
 
+            numInput = keras.layers.Input(shape=(NUMERIC_INPUT_LENGTH,))
+            numMod = keras.layers.Dense(14,activation='relu')(numInput)
+            numMod = keras.layers.Dense(8, activation='relu')(numMod)
+            numMod = keras.Model(inputs=numInput, outputs=numMod)
+
+            merge = keras.layers.concatenate([convMod.output,numMod.output])
+
+            mergeMod = keras.layers.Dense(256,activation='relu')(merge)
+            mergeMod = keras.layers.Dense(128,activation='relu')(mergeMod)
+            mergeMod = keras.layers.Dense(5,activation='linear')(mergeMod)
+
+            self.model = keras.Model(inputs=[numMod.input, convMod.input], outputs=mergeMod)
+            self.model.compile(loss='mean_squared_error',optimizer=Adam(lr=LEARNING_RATE))
 
         else:
             self.exploration_rate = 0
@@ -95,10 +119,12 @@ class DQNSolver:
         batch = random.sample(self.memory, BATCH_SIZE)
         for state, action, reward, state_next, terminal in batch:
             q_update = reward
+     
             if not terminal:
                 q_update = (reward + GAMMA * np.amax(self.model.predict(state_next)[0]))
 
             q_values = self.model.predict(state)
+            
             q_values[0][action] = q_update
             self.model.fit(state, q_values, verbose=0)
         self.exploration_rate *= EXPLORATION_DECAY
@@ -140,15 +166,21 @@ class MarineAgent(base_agent.BaseAgent):
         # <editor-fold> desc="Read game data / input, handle it"
         
         
-        newState = np.array([[getUnitsScreen(obs), 
-                             getHPRatioScreen(obs),
-                             getSelectedMinimap(obs), 
-                             getFactionsScreen(obs),
-                             getVisibilityScreen(obs),
-                             getVisiblityMinimap(obs),
-                             getFactionsScreen(obs),
-                             getSelectedScreen(obs),
-                             getFactionsMinimap(obs)]])
+        concMinimap = np.array([getFactionsMinimap(obs), getVisiblityMinimap(obs), getSelectedMinimap(obs)])
+        concScreen = np.array([getFactionsScreen(obs), getVisibilityScreen(obs),
+                               getSelectedScreen(obs), getHPScreen(obs), getUnitsScreen(obs), getHeightScreen(obs)])
+        concImage = np.array([np.concatenate((concMinimap,concScreen))])
+        concImage = concImage.astype('float32')
+
+
+
+        numericValues = np.array([[getGas(obs), getMinerals(obs), getGas(obs),
+                            getSupplyMax(obs),getSupplyMax(obs)-getSupply(obs),
+                            getSupplyArmy(obs),getSupplyWorkers(obs)]])
+        numericValues = numericValues.astype('float32')
+        
+
+        newState = ([numericValues,concImage])
         #newState = newState.reshape(1,84,84,1)
         #Reset justSelectWorker variable now that it has been read
         self.justSelectWorker = -1
