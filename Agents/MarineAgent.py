@@ -6,11 +6,12 @@ from absl import app
 import numpy as np
 import keras
 from simpleSC2API import *
+from stateHandler import *
 
 np.set_printoptions(threshold=np.inf)
 
 
-WR = keras.models.load_model("9.h5")
+WR = keras.models.load_model("999.h5")
 
 
 class MarineAgent(base_agent.BaseAgent):
@@ -46,10 +47,15 @@ class MarineAgent(base_agent.BaseAgent):
         #q = actHarvestScreen(obs, 20, 20)
         # print(q)
         # return q
-        concMinimap = np.array(
-            [[getFactionsMinimap(obs), getVisiblityMinimap(obs), getSelectedMinimap(obs)]])
-        concMinimap = np.moveaxis(concMinimap, 1, 3)
-        print(WR.predict(concMinimap))
+        #concMinimap = np.array([[getFactionsMinimap(obs), getVisiblityMinimap(obs), getSelectedMinimap(obs)]])
+        #concMinimap = np.moveaxis(concMinimap, 1, 3)
+        numInput, input = getIngameNormalisedState(obs)
+        #print(input.shape)
+        #exit()
+        numInput = np.array([numInput])
+        input = np.array([input])
+        input = np.moveaxis(input, 1, 3)
+        print(WR.predict([numInput,input]))
         # exit()
 
         return actions.FUNCTIONS.no_op()
@@ -60,12 +66,12 @@ def main(unused_argv):
     try:
         while True:
             with sc2_env.SC2Env(
-                    map_name="AbyssalReef",
+                    map_name="Automaton",
                     players=[sc2_env.Agent(sc2_env.Race.terran),
                              sc2_env.Bot(sc2_env.Race.terran,
                                          sc2_env.Difficulty.very_easy)],
                     agent_interface_format=features.AgentInterfaceFormat(
-                        feature_dimensions=features.Dimensions(screen=84, minimap=64), use_feature_units=True),
+                        feature_dimensions=features.Dimensions(screen=64, minimap=64), use_feature_units=True),
                     step_mul=16,
                     game_steps_per_episode=0,
                     visualize=True) as env:
