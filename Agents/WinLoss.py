@@ -2,7 +2,7 @@ import random
 import tensorflow as tf
 import numpy as np
 import os
-
+import datetime
 from collections import deque
 import keras
 from keras.models import Sequential
@@ -28,11 +28,11 @@ class Network:
     def __init__(self):
         # Creation of network, topology stuff goes here
         convInput = keras.layers.Input(shape=(FRAME_WIDTH, FRAME_HEIGHT, STATE_LENGTH))
-        convMod = keras.layers.Conv2D(32,(4,4),activation='relu',data_format='channels_last')(convInput)
+        convMod = keras.layers.Conv2D(9,(3,3),activation='relu',data_format='channels_last')(convInput)
         convMod = keras.layers.MaxPooling2D(pool_size=(2, 2))(convMod)
-        convMod = keras.layers.Conv2D(48, (3,3), activation='relu')(convMod)
+        convMod = keras.layers.Conv2D(18, (3,3), activation='relu')(convMod)
         convMod = keras.layers.MaxPooling2D(pool_size=(2, 2))(convMod)
-        convMod = keras.layers.Conv2D(64, (2,2), activation='relu')(convMod)
+        convMod = keras.layers.Conv2D(36, (3,3), activation='relu')(convMod)
         convMod = keras.layers.MaxPooling2D(pool_size=(2, 2))(convMod)
         convMod = keras.layers.Flatten()(convMod)
         convMod= keras.layers.Dense(128,activation='relu')(convMod)
@@ -86,12 +86,18 @@ def transposeBatch(data):
     return (np.array([row[0] for row in data]),np.array([row[1] for row in data]),np.array([row[2] for row in data]))
 
 
+timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H.%M.%S")
 #Train the network!
 for i in range(0,1000):
-    numInput, target,input = createTrainingBatch(450)
+    numInput, target,input = createTrainingBatch(4500)
     valNumInput, valTarget, valInput = createValidationBatch(450)
     #Swap ordering of dimensions so that keras can accept input.
     valInput= np.moveaxis(valInput, 1, 3)
     input = np.moveaxis(input, 1, 3)
     history = network.model.fit([numInput, input], target, validation_data=([valNumInput, valInput],valTarget), epochs=1, batch_size=50)
     network.save(str(i)+"-L"+str(history.history['loss']) + "-VL"+str(history.history['val_loss']))
+    #t1 = time() - trainingStartTime
+    logFile = open(timestamp + "-X.log", "a+")
+    logFile.write(str(i)+"-L"+str(history.history['loss']) + "-VL"+str(history.history['val_loss'])+"\n")
+    logFile.close()
+
