@@ -45,7 +45,7 @@ BATCH_SIZE = 20
 #until it reaches min chance
 EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.05
-EXPLORATION_DECAY = 0.9999
+EXPLORATION_DECAY = 0.99999
 
 loadNetworkOnlyExploit = False #TODO True if loading trained network
 class DQNSolver:
@@ -75,11 +75,11 @@ class DQNSolver:
         self.memory.append((state, action, reward, next_state, done))
 
     def act(self, state):
-        #if np.random.rand() < self.exploration_rate:
+        if np.random.rand() < self.exploration_rate:
             return random.randrange(self.action_space)
-        #q_values = self.model.predict(state)
+        q_values = self.model.predict(state)
         #print('Q values: {}'.format(q_values))
-        #return np.argmax(q_values[0])
+        return np.argmax(q_values[0])
         #print('Selecting: {}'.format(np.argmax(q_values[0])))
         #return getRandomWeightedIndex(q_values[0])
 
@@ -157,6 +157,10 @@ class MarineAgent(base_agent.BaseAgent):
             #use the last state and the current state instead.
             self.state = newState
             self.action = 0
+            self.justSelectWorker = -1
+            self.freeWorkersOld = 12
+            self.nextSupplyNr = 0
+            random.seed(1) # Use same random seed every time.
             return actions.FUNCTIONS.no_op()
         # </editor-fold>
         #<editor-fold> desc="Calculate reward"
