@@ -28,14 +28,14 @@ class Network:
     def __init__(self):
         # Creation of network, topology stuff goes here
         convInput = keras.layers.Input(shape=(FRAME_WIDTH, FRAME_HEIGHT, STATE_LENGTH))
-        convMod = keras.layers.Conv2D(32,(3,3),activation='relu',data_format='channels_last')(convInput)
+        convMod = keras.layers.Conv2D(32,(4,4),activation='relu',data_format='channels_last')(convInput)
         convMod = keras.layers.MaxPooling2D(pool_size=(2, 2))(convMod)
-        convMod = keras.layers.Conv2D(64, (3,3), activation='relu')(convMod)
+        convMod = keras.layers.Conv2D(48, (3,3), activation='relu')(convMod)
         convMod = keras.layers.MaxPooling2D(pool_size=(2, 2))(convMod)
-        convMod = keras.layers.Conv2D(128, (1,1), activation='relu')(convMod)
+        convMod = keras.layers.Conv2D(64, (2,2), activation='relu')(convMod)
         convMod = keras.layers.MaxPooling2D(pool_size=(2, 2))(convMod)
         convMod = keras.layers.Flatten()(convMod)
-        convMod= keras.layers.Dense(512,activation='relu')(convMod)
+        convMod= keras.layers.Dense(128,activation='relu')(convMod)
         convMod= keras.layers.Dense(56,activation='relu')(convMod)
         convMod = keras.Model(inputs=convInput, outputs=convMod)
 
@@ -46,8 +46,8 @@ class Network:
 
         merge = keras.layers.concatenate([convMod.output, numMod.output])
 
-        mergeMod = keras.layers.Dense(256, activation='relu')(merge)
-        mergeMod = keras.layers.Dense(128, activation='relu')(mergeMod)
+        mergeMod = keras.layers.Dense(128, activation='relu')(merge)
+        mergeMod = keras.layers.Dense(64, activation='relu')(mergeMod)
         mergeMod = keras.layers.Dense(1, activation='sigmoid')(mergeMod)
 
         self.model = keras.Model(inputs=[numMod.input,convMod.input], outputs=mergeMod)
@@ -88,7 +88,7 @@ def transposeBatch(data):
 
 #Train the network!
 for i in range(0,1000):
-    numInput, target,input = createTrainingBatch(4500)
+    numInput, target,input = createTrainingBatch(450)
     valNumInput, valTarget, valInput = createValidationBatch(450)
     #Swap ordering of dimensions so that keras can accept input.
     valInput= np.moveaxis(valInput, 1, 3)
