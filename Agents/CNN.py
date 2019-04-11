@@ -14,25 +14,26 @@ from keras.optimizers import Adam
 from time import time
 from simpleSC2API import *
 
+import datetime
+
 from absl import app
 
 
-
-#<editor-fold desc="Network"
+# <editor-fold desc="Network"
 ####Most code for DQNSolver from https://github.com/gsurma/cartpole####
-#This is the network, structure is defined in __init__
-#Other hyper parameters are here
+# This is the network, structure is defined in __init__
+# Other hyper parameters are here
 
-#Future rewards discount
+# Future rewards discount
 GAMMA = 0.99
 LEARNING_RATE = 0.00001
 
 MEMORY_SIZE = 1000000
-#Size of minibatches used during learning
+# Size of minibatches used during learning
 BATCH_SIZE = 20
-#Chance to take random action instead of using the network's output
-#Max = starting chance, is multiplied by decay after each experience replay
-#until it reaches min chance
+# Chance to take random action instead of using the network's output
+# Max = starting chance, is multiplied by decay after each experience replay
+# until it reaches min chance
 EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.05
 EXPLORATION_DECAY = 0.9999
@@ -42,8 +43,15 @@ FRAME_HEIGHT = 64
 STATE_LENGTH = 9
 NUMERIC_INPUT_LENGTH = 7
 
+# Log variables
+timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H.%M.%S")
+trainingStartTime = time()
 
-loadNetworkOnlyExploit = False #TODO-----------------------------------------------------------Change this if you want to load a network that has already been trained.
+
+# TODO-----------------------------------------------------------Change this if you want to load a network that has already been trained.
+loadNetworkOnlyExploit = False
+
+
 class DQNSolver:
 
     def __init__(self, observation_space, action_space):
@@ -54,55 +62,61 @@ class DQNSolver:
         if not loadNetworkOnlyExploit:
             self.exploration_rate = EXPLORATION_MAX
 
-            #Creation of network, topology stuff goes here
-            ## Not used
-            #asd = keras.initializers.VarianceScaling(scale=2) #https://towardsdatascience.com/tutorial-double-deep-q-learning-with-dueling-network-architectures-4c1b3fb7f756
-            
+            # Creation of network, topology stuff goes here
+            # Not used
+            # asd = keras.initializers.VarianceScaling(scale=2) #https://towardsdatascience.com/tutorial-double-deep-q-learning-with-dueling-network-architectures-4c1b3fb7f756
+
             # Creation of network, topology stuff goes here
             #self.model = Sequential()
-            #self.model.add(
-                #Conv2D(16, 4, activation="relu",
-                 #   input_shape=(STATE_LENGTH,FRAME_WIDTH, FRAME_HEIGHT), data_format='channels_first'))
+            # self.model.add(
+            # Conv2D(16, 4, activation="relu",
+            #   input_shape=(STATE_LENGTH,FRAME_WIDTH, FRAME_HEIGHT), data_format='channels_first'))
             #self.model.add(MaxPooling2D(pool_size=(2, 2)))
             #self.model.add(Conv2D(16, 2, activation="relu"))
             #self.model.add(MaxPooling2D(pool_size=(2, 2)))
             #self.model.add(Conv2D(8, 2, activation="relu"))
             #self.model.add(MaxPooling2D(pool_size=(2, 2)))
-            #self.model.add(Flatten())
+            # self.model.add(Flatten())
             #self.model.add(Dense(64, activation="relu"))
-            #self.model.add(Dense(self.action_space))
+            # self.model.add(Dense(self.action_space))
 
             #self.model.compile(loss="logcosh", optimizer=Adam(lr=LEARNING_RATE))
 
-            convInput = keras.layers.Input(shape=(STATE_LENGTH,FRAME_WIDTH,FRAME_HEIGHT))
-            convMod = keras.layers.Conv2D(64,4,activation='relu', data_format='channels_first')(convInput)
-            convMod = keras.layers.MaxPooling2D(pool_size=(2,2))(convMod)
-            convMod = keras.layers.Conv2D(32, 2, activation='relu')(convMod)
+            convInput = keras.layers.Input(
+                shape=(STATE_LENGTH, FRAME_WIDTH, FRAME_HEIGHT))
+            convMod = keras.layers.Conv2D(
+                32, (3, 3), activation='relu', data_format='channels_first')(convInput)
             convMod = keras.layers.MaxPooling2D(pool_size=(2, 2))(convMod)
-            convMod = keras.layers.Conv2D(32, 2, activation='relu')(convMod)
+            convMod = keras.layers.Conv2D(
+                64, (3, 3), activation='relu')(convMod)
+            convMod = keras.layers.MaxPooling2D(pool_size=(2, 2))(convMod)
+            convMod = keras.layers.Conv2D(
+                128, (1, 1), activation='relu')(convMod)
             convMod = keras.layers.MaxPooling2D(pool_size=(2, 2))(convMod)
             convMod = keras.layers.Flatten()(convMod)
-            convMod = keras.layers.Dense(512,activation='relu')(convMod)
+            convMod = keras.layers.Dense(512, activation='relu')(convMod)
             convMod = keras.Model(inputs=convInput, outputs=convMod)
 
             numInput = keras.layers.Input(shape=(NUMERIC_INPUT_LENGTH,))
-            numMod = keras.layers.Dense(14,activation='relu')(numInput)
+            numMod = keras.layers.Dense(14, activation='relu')(numInput)
             numMod = keras.layers.Dense(8, activation='relu')(numMod)
             numMod = keras.Model(inputs=numInput, outputs=numMod)
 
-            merge = keras.layers.concatenate([convMod.output,numMod.output])
+            merge = keras.layers.concatenate([convMod.output, numMod.output])
 
-            mergeMod = keras.layers.Dense(256,activation='relu')(merge)
-            mergeMod = keras.layers.Dense(128,activation='relu')(mergeMod)
-            mergeMod = keras.layers.Dense(5,activation='linear')(mergeMod)
+            mergeMod = keras.layers.Dense(256, activation='relu')(merge)
+            mergeMod = keras.layers.Dense(128, activation='relu')(mergeMod)
+            mergeMod = keras.layers.Dense(5, activation='linear')(mergeMod)
 
-            self.model = keras.Model(inputs=[numMod.input, convMod.input], outputs=mergeMod)
-            self.model.compile(loss='mean_squared_error',optimizer=Adam(lr=LEARNING_RATE))
+            self.model = keras.Model(
+                inputs=[numMod.input, convMod.input], outputs=mergeMod)
+            self.model.compile(loss='mean_squared_error',
+                               optimizer=Adam(lr=LEARNING_RATE))
 
         else:
             self.exploration_rate = 0
-            self.model = keras.models.load_model("testNetwork4695.h5")          #TODO-----------------------------------------------------------Change this if you want to load another network that has already been trained.
-
+            # TODO-----------------------------------------------------------Change this if you want to load another network that has already been trained.
+            self.model = keras.models.load_model("testNetwork4695.h5")
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
@@ -119,12 +133,13 @@ class DQNSolver:
         batch = random.sample(self.memory, BATCH_SIZE)
         for state, action, reward, state_next, terminal in batch:
             q_update = reward
-     
+
             if not terminal:
-                q_update = (reward + GAMMA * np.amax(self.model.predict(state_next)[0]))
+                q_update = (reward + GAMMA *
+                            np.amax(self.model.predict(state_next)[0]))
 
             q_values = self.model.predict(state)
-            
+
             q_values[0][action] = q_update
             self.model.fit(state, q_values, verbose=0)
         self.exploration_rate *= EXPLORATION_DECAY
@@ -133,13 +148,13 @@ class DQNSolver:
     def save(self, name):
         self.model.save(name+'.h5')
 
-#Size of input
-obsSpace = 4
-#Size of output /availble actions
-actSpace = 5
-#init of network
-dqn_solver = DQNSolver(obsSpace, actSpace)
 
+# Size of input
+obsSpace = 4
+# Size of output /availble actions
+actSpace = 5
+# init of network
+dqn_solver = DQNSolver(obsSpace, actSpace)
 
 
 class MarineAgent(base_agent.BaseAgent):
@@ -150,121 +165,127 @@ class MarineAgent(base_agent.BaseAgent):
 
     def step(self, obs):
         super(MarineAgent, self).step(obs)
-        global dqn_solver #Let python access the global variable dqn_solver
+        global dqn_solver  # Let python access the global variable dqn_solver
         if obs.last():
             print(dqn_solver.exploration_rate)
+            score = obs.observation.score_cumulative.collected_minerals
             if dqn_solver.exploration_rate < 0.06:
-                score = obs.observation.score_cumulative.collected_minerals
                 compareResultsAndSave(score)
+            # Log score to file
+            t1 = time() - trainingStartTime
+            logFile = open(timestamp + ".log", "a+")
+            logFile.write("%4d %.4f %7ds\n" %
+                          (score, dqn_solver.exploration_rate, t1))
+            logFile.close()
 
         # <editor-fold> desc="Multistep action stuff, leave it alone"
-        #This is the code that handles actions that require multiple steps, don't touch and leave at the top
+        # This is the code that handles actions that require multiple steps, don't touch and leave at the top
         doingMultiAction = executeMultiAction(obs)
         if doingMultiAction != False:
             return doingMultiAction
-        #</editor-fold>
+        # </editor-fold>
         # <editor-fold> desc="Read game data / input, handle it"
-        
-        
-        concMinimap = np.array([getFactionsMinimap(obs), getVisiblityMinimap(obs), getSelectedMinimap(obs)])
+
+        concMinimap = np.array(
+            [getFactionsMinimap(obs), getVisiblityMinimap(obs), getSelectedMinimap(obs)])
         concScreen = np.array([getFactionsScreen(obs), getVisibilityScreen(obs),
                                getSelectedScreen(obs), getHPScreen(obs), getUnitsScreen(obs), getHeightScreen(obs)])
-        concImage = np.array([np.concatenate((concMinimap,concScreen))])
-        concImage = concImage.astype('float32')
-
-
+        concImage = np.array([np.concatenate((concMinimap, concScreen))])
+        #concImage = concImage.astype('float32')
 
         numericValues = np.array([[getGas(obs), getMinerals(obs), getGas(obs),
-                            getSupplyMax(obs),getSupplyMax(obs)-getSupply(obs),
-                            getSupplyArmy(obs),getSupplyWorkers(obs)]])
-        numericValues = numericValues.astype('float32')
-        
+                                   getSupplyMax(obs), getSupplyMax(
+                                       obs)-getSupply(obs),
+                                   getSupplyArmy(obs), getSupplyWorkers(obs)]])
+        #numericValues = numericValues.astype('float32')
 
-        newState = ([numericValues,concImage])
+        newState = ([numericValues, concImage])
         #newState = newState.reshape(1,84,84,1)
-        #Reset justSelectWorker variable now that it has been read
+        # Reset justSelectWorker variable now that it has been read
         self.justSelectWorker = -1
 
         # </editor-fold>
         # <editor-fold> desc="Things that should happen on first frame only"
         if obs.first():
-            #Currently saves the first state and do no_op.
-            #Reason behind this is that the learning requires info on a state and the following state
-            #And because we can't know the future state before reaching it(easily anyways), might as well
-            #use the last state and the current state instead.
+            # Currently saves the first state and do no_op.
+            # Reason behind this is that the learning requires info on a state and the following state
+            # And because we can't know the future state before reaching it(easily anyways), might as well
+            # use the last state and the current state instead.
             self.state = newState
             self.action = 0
             return actions.FUNCTIONS.no_op()
         # </editor-fold>
-        #<editor-fold> desc="Calculate reward"
+        # <editor-fold> desc="Calculate reward"
 
-        #reward = ((getSupplyWorkers(obs)-(getFreeWorkers(obs)*2))/50)#*(1)+getMinerals(obs)/5000)
-        reward = (abs(self.freeWorkersOld - getFreeWorkers(obs)))*(0.5+getSupplyWorkers(obs)/50)
+        # reward = ((getSupplyWorkers(obs)-(getFreeWorkers(obs)*2))/50)#*(1)+getMinerals(obs)/5000)
+        reward = (abs(self.freeWorkersOld - getFreeWorkers(obs))) * \
+            (0.5+getSupplyWorkers(obs)/50)
         self.freeWorkersOld = getFreeWorkers(obs)
-        print (reward)
+        print(reward)
         #reward = self.justSelectWorker
 
+        # </editor-fold>
 
-        #</editor-fold>
-
-
-        newAction = dqn_solver.act(newState) #Use network to get a new action
+        newAction = dqn_solver.act(newState)  # Use network to get a new action
 
         # <editor-fold> desc="Learning stuff"
         global loadNetworkOnlyExploit
         if not loadNetworkOnlyExploit:
-        #Save last state, last action, reward on this state, this state
-        #Same as state,action,reward,nextState but backwards
-            dqn_solver.remember(self.state,self.action,reward,newState,False)
+            # Save last state, last action, reward on this state, this state
+            # Same as state,action,reward,nextState but backwards
+            dqn_solver.remember(self.state, self.action,
+                                reward, newState, False)
 
-        #Save current state and action that will be taken so that it can
-        #be used on the next frame.
+        # Save current state and action that will be taken so that it can
+        # be used on the next frame.
         self.state = newState
         self.action = newAction
 
-        #Memory playback, teach network using random previous frames.
+        # Memory playback, teach network using random previous frames.
         if not loadNetworkOnlyExploit:
             dqn_solver.experience_replay()
         # </editor-fold>
 
-
-
         # <editor-fold> desc="Action usage"
         if self.action == 4:
-            x = random.randrange(30,50)
-            y = random.randrange(8,25)
+            x = random.randrange(30, 50)
+            y = random.randrange(8, 25)
             return actBuildSupplyDepot(obs, x, y)
         elif self.action == 3:
             minerals = [unit for unit in obs.observation.feature_units
                         if unit.unit_type == units.Neutral.MineralField]
             rMineral = random.choice(minerals)
-            return actHarvestScreen(obs,rMineral.x,rMineral.y)
+            return actHarvestScreen(obs, rMineral.x, rMineral.y)
         elif self.action == 2:
             self.justSelectWorker = 1
             return actSelectIdleWorker(obs)
 
-        posActions = [actions.FUNCTIONS.no_op(),actMultiTrainSCV(obs)]
+        posActions = [actions.FUNCTIONS.no_op(), actMultiTrainSCV(obs)]
         return posActions[self.action]
         # </editor-fold>
 
-        return actions.FUNCTIONS.no_op() #Left here so things don't crash when changing action usage
+        # Left here so things don't crash when changing action usage
+        return actions.FUNCTIONS.no_op()
+
 
 savedNetworkScores = deque(maxlen=10)
 
+
 def compareResultsAndSave(score):
-        filePrefix="testNetwork"
-        if(len(savedNetworkScores) == 0 or max(savedNetworkScores) < score):
-            if len(savedNetworkScores) < savedNetworkScores.maxlen:
-                savedNetworkScores.append(score)
-                dqn_solver.save(filePrefix+str(score))
-            else:
-                poppedScore = savedNetworkScores.popleft()
-                savedNetworkScores.append(score)
+    filePrefix = "testNetwork"
+    if(len(savedNetworkScores) == 0 or max(savedNetworkScores) < score):
+        if len(savedNetworkScores) < savedNetworkScores.maxlen:
+            savedNetworkScores.append(score)
+            dqn_solver.save(filePrefix+str(score))
+        else:
+            poppedScore = savedNetworkScores.popleft()
+            savedNetworkScores.append(score)
 
-                os.remove(filePrefix+str(poppedScore)+'.h5')
-                dqn_solver.save(filePrefix+str(score))
+            os.remove(filePrefix+str(poppedScore)+'.h5')
+            dqn_solver.save(filePrefix+str(score))
 
-        print(savedNetworkScores)
+    print(savedNetworkScores)
+
 
 def main(unused_argv):
     agent = MarineAgent()
@@ -294,7 +315,7 @@ def main(unused_argv):
                         break
                     timesteps = env.step(step_actions)
                 # </editor-fold>
-        #</editor-fold>
+        # </editor-fold>
 
     except KeyboardInterrupt:
         pass
