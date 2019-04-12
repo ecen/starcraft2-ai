@@ -5,6 +5,8 @@ import random
 from google.protobuf.json_format import ParseDict
 import sys
 from simpleSC2API import *
+import keras
+import time
 
 client = pymongo.MongoClient()
 db = client["replay_database"]
@@ -27,7 +29,50 @@ replays.create_index("replay_name")
 players.create_index("replay_name")
 #This sorts the database I believe, so it might take some time to run these lines when running this for the first time.
 states.create_index([("replay_name", pymongo.ASCENDING), ("frame_id", pymongo.ASCENDING)])
+statesCursor = states.find()
 scores.create_index([("replay_name", pymongo.ASCENDING), ("frame_id", pymongo.ASCENDING)])
+statesLength = states.find().count()
+
+
+class DataGenerator(keras.utils.Sequence):
+    def __init__(self, stateCount = statesLength, batchSize = 30):
+        self.stateCount = stateCount
+        self.batchSize = batchSize
+
+        self.indexes = np.arange(self.stateCount)
+        np.random.shuffle(self.indexes)
+
+    def __len__(self):
+        return self.stateCount//self.batchSize
+
+    def on_epoch_end(self):
+        self.indexes = np.arange(self.stateCount)
+        np.random.shuffle(self.indexes)
+
+    def transposeBatch(self, data):
+        return (np.array([row[0] for row in data]), np.array([row[1] for row in data]), np.array([row[2] for row in data]))
+
+
+    def data_generation(self, indexes):
+        batch = []
+        for i in indexes:
+            temp = concatQueriedState(normalizeQueryState(queryStateByIndex(i)))
+            if temp != None:
+                batch.append(temp)
+
+        numInput, target, input = self.transposeBatch(batch)
+        input = np.moveaxis(input, 1, 3)
+
+        return [numInput, input], target
+
+
+    def __getitem__(self, batchNumber):
+        indexes = self.indexes[batchNumber*self.batchSize:(batchNumber+1)*self.batchSize]
+        x,y = self.data_generation(indexes)
+        return x,y
+
+
+
 
 
 #Initialize trainingReplay_ids as all replay_ids.
@@ -136,6 +181,48 @@ def concatIngameState(data):
     return (data[0], np.concatenate((data[1],data[2])))
 
 #Queries mongoDB for the given state.
+def queryStateByIndex(index):
+
+    startTime = time.time()
+    print("S: "+str(startTime))
+
+    state = states.find()[index.item()]
+
+    print(time.time()-startTime)
+
+    replayID = state["replay_name"]
+    playerID = state["player_id"]
+    frameID = state["frame_id"]
+
+    playerState = players.find({'replay_name': replayID, 'player_id': playerID})
+    winLoss = 0
+    for playerdata in playerState:
+        winLoss = playerdata["result"]
+    # Minimap data
+    miniFactions = pickle.loads(state["minimap"]["factions"])
+    miniVision = pickle.loads(state["minimap"]["vision"])
+    miniSelected = pickle.loads(state["minimap"]["selected"])
+    # Screen data
+    screenFactions = pickle.loads(state["screen"]["factions"])
+    screenVision = pickle.loads(state["screen"]["vision"])
+    screenSelected = pickle.loads(state["screen"]["selected"])
+    screenHp = pickle.loads(state["screen"]["hp"])
+    screenUnits = pickle.loads(state["screen"]["units"])
+    screenHeight = pickle.loads(state["screen"]["height"])
+    # Raw data
+    minerals = state["resources"]["minerals"]
+    vespene = state["resources"]["vespene"]
+    supTotal = state["supply"]["total"]
+    supUsed = state["supply"]["used"]
+    supArmy = state["supply"]["army"]
+    supWorkers = state["supply"]["workers"]
+    # FrameID
+    concMinimap = np.array([miniFactions, miniVision, miniSelected])
+    concScreen = np.array([screenFactions, screenVision, screenSelected, screenHp, screenUnits, screenHeight])
+    concRaw = np.array([frameID, minerals, vespene, supTotal, supUsed, supArmy, supWorkers])
+
+    return [concRaw, concMinimap, concScreen, winLoss]
+
 def queryState(replayID, frameID, playerID):
     state = states.find({'replay_name':replayID, 'frame_id':frameID, 'player_id':playerID})
 
@@ -177,3 +264,7 @@ def queryState(replayID, frameID, playerID):
     print(replayID)
     print(frameID)
     print(playerID)
+
+# print((db.states.find().count()))
+# print(queryStateByIndex(100))
+# exit()
