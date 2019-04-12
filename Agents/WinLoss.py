@@ -92,17 +92,11 @@ if __name__ == "__main__":
     trainingGenerator = reader.DataGenerator()
 
     for i in range(0,10000):
-        #numInput, target,input = createTrainingBatch(45)
-        #valNumInput, valTarget, valInput = createValidationBatch(45)
-        #Swap ordering of dimensions so that keras can accept input.
-        #valInput= np.moveaxis(valInput, 1, 3)
-        #input = np.moveaxis(input, 1, 3)
-        # history = network.model.fit([numInput, input], target, validation_data=([valNumInput, valInput],valTarget), epochs=1, batch_size=50)
-        print(str(i))
+        print("EPOCH: " + str(i+1))
         history = network.model.fit_generator(generator=trainingGenerator)#, use_multiprocessing=True, workers=4, max_queue_size=10)
-        network.save(str(i)+"-L"+str(history.history['loss']) + "-VL"+str(history.history['val_loss']))
+        network.save(str(i)+"-L"+str(history.history['loss'])) #+ "-VL"+str(history.history['val_loss']))
         #t1 = time() - trainingStartTime
         logFile = open(timestamp + "-X.log", "a+")
-        logFile.write(str(i)+"-L"+str(history.history['loss']) + "-VL"+str(history.history['val_loss'])+"\n")
+        logFile.write(str(i)+"-L"+str(history.history['loss']))# + "-VL"+str(history.history['val_loss'])+"\n")
         logFile.close()
 
