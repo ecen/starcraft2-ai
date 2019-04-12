@@ -44,7 +44,7 @@ BATCH_SIZE = 20
 #Max = starting chance, is multiplied by decay after each experience replay
 #until it reaches min chance
 EXPLORATION_MAX = 1.0
-EXPLORATION_MIN = 0.05
+EXPLORATION_MIN = 0.2
 EXPLORATION_DECAY = 0.99999
 
 loadNetworkOnlyExploit = False #TODO True if loading trained network
@@ -68,7 +68,7 @@ class DQNSolver:
         else:
             self.exploration_rate = 0
             #TODO Path of network to load if loading network
-            self.model = keras.models.load_model("testNetwork4845.h5")
+            self.model = keras.models.load_model("testNetwork5005.h5")
 
 
     def remember(self, state, action, reward, next_state, done):
@@ -127,7 +127,7 @@ class MarineAgent(base_agent.BaseAgent):
         if obs.last():
             print(dqn_solver.exploration_rate)
             score = obs.observation.score_cumulative.collected_minerals
-            if dqn_solver.exploration_rate < 0.06:
+            if dqn_solver.exploration_rate <= EXPLORATION_MIN:
                 compareResultsAndSave(score)
             # Log score to file
             t1 = time() - trainingStartTime
@@ -199,7 +199,7 @@ class MarineAgent(base_agent.BaseAgent):
 
 
         # <editor-fold> desc="Action usage"
-        if self.action == 4:
+        if self.action == 4: # Build supply
             #x = random.randrange(30,50)
             #y = random.randrange(8,25)
             x = SUPPLY_LOCATIONS[self.nextSupplyNr][0]
@@ -208,15 +208,16 @@ class MarineAgent(base_agent.BaseAgent):
             if (self.nextSupplyNr >= len(SUPPLY_LOCATIONS)):
                 self.nextSupplyNr = 0
             return actBuildSupplyDepot(obs, x, y)
-        elif self.action == 3:
+        elif self.action == 3: # Order selected worker to mine
             minerals = [unit for unit in obs.observation.feature_units
                         if unit.unit_type == units.Neutral.MineralField]
             rMineral = random.choice(minerals)
             return actHarvestScreen(obs,rMineral.x,rMineral.y)
-        elif self.action == 2:
+        elif self.action == 2: # Select worker
             self.justSelectWorker = 1
             return actSelectIdleWorker(obs)
-
+            
+        # Train worker
         posActions = [actions.FUNCTIONS.no_op(),actMultiTrainSCV(obs)]
         return posActions[self.action]
         # </editor-fold>

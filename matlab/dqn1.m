@@ -266,10 +266,12 @@ set(gca,...
 name = ['figures/', 'dqnWorkerRewardExpdecay5-9', '.eps'];
 print('-depsc2', name);
 
+
+
 %% Continous worker rewards, better pre-determined supply depots, 5 nines 
 data = load("data/dqnWorkerRewardSupplyLocationExpdecay5-9.csv")
 [n, p] = size(data);
-m = n
+m = 1000
 scores=data(1:m,1);
 supply=data(1:m,4);
 steps=data(1:m,3);
@@ -326,3 +328,203 @@ set(gca,...
 name = ['figures/', 'dqnWorkerRewardExpdecay5-9', '.eps'];
 print('-depsc2', name);
 print('BarPlot', '-dpng');
+
+%clf
+m1 = mean(scores)
+s1 = std(scores)
+hold on
+%histogram(scores(1000:1400), 'BinWidth', 200)
+%histogram(scores(300:700), 'BinWidth', 200)
+hold off
+
+%% Continous worker rewards, 
+% better pre-determined supply depots, 5 nines Test
+
+data = load("data/dqnWorkerRewardSupplyLocationExpdecay5-9Test.csv")
+[n, p] = size(data);
+m = n
+scores=data(1:m,1);
+supply=data(1:m,4);
+steps=data(1:m,3);
+explorationDecay=0.99999;
+
+clf
+scatter([1:m], scores, 20, supply, 'filled');
+hold on
+yyaxis right
+plot([1:m], max(1*explorationDecay.^steps, 0.05));
+yyaxis left
+stepSize=100
+means = []
+deviations = []
+j = 1
+for i=1:stepSize:m-stepSize
+    i
+    means(j)=mean(scores(i:i+stepSize));
+    deviations(j)=std(scores(i:i+stepSize));
+    j = j + 1;
+end
+means;
+deviations;
+%eb = errorbar([1:stepSize:m-stepSize] + stepSize/2, means, deviations * 2)
+%eb.Color = 'black';
+%eb.CapSize = stepSize/4;
+hold off
+c = colorbar;
+%yyaxis left
+
+title('',...
+    'FontUnits','points',...
+    'interpreter','latex',...
+    'FontWeight','normal',...
+    'FontSize',12,...
+    'FontName','Times')
+ylabel({'score'},...
+    'FontUnits','points',...
+    'interpreter','latex',...
+    'FontWeight','normal',...
+    'FontSize',18,...z
+    'FontName','Times')
+xlabel('episode',...
+    'FontUnits','points',...
+    'interpreter','latex',...
+    'FontWeight','normal',...
+    'FontSize',18,...
+    'FontName','Times')
+ylabel(c, 'workers');
+set(gca,...
+    'FontSize',10);
+%xlim([0 710])
+
+name = ['figures/', 'dqnWorkerRewardExpdecay5-9', '.eps'];
+%print('-depsc2', name);
+%print('BarPlot', '-dpng');
+
+m1 = mean(scores)
+s1 = std(scores)
+%histogram(scores(1:m))
+
+%% Explore value tests
+data1 = load("data/dqnTestExplore-0.05.csv")
+data2 = load("data/dqnTestExplore-0.00.csv")
+[n1, p1] = size(data1);
+[n2, p2] = size(data2);
+m = min(n1, n2);
+
+scores1=data1(1:m,1);
+workers1=data1(1:m,4)
+scores2=data2(1:m,1);
+workers2=data2(1:m,4);
+
+clf
+hold on
+scatter([1:m], scores1, 20, workers1, 'filled', 'MarkerEdgeColor',[0 0 0])
+scatter([1:m], scores2, 20, workers2, 'd', 'filled')
+hold off
+clf
+colorbar;
+m1 = mean(scores1)
+s1 = std(scores1)
+m2 = mean(scores2)
+s2 = std(scores2)
+hold on
+counts = 200
+histogram(scores1(1:m), 'BinWidth', counts)
+histogram(scores2(1:m), 'BinWidth', counts)
+hold off
+
+%['Fyrkantsv\aa g, $k = ', num2str(k), '$']
+title('',...
+    'FontUnits','points',...
+    'interpreter','latex',...
+    'FontWeight','normal',...
+    'FontSize',12,...
+    'FontName','Times')
+ylabel({'score'},...
+    'FontUnits','points',...
+    'interpreter','latex',...
+    'FontWeight','normal',...
+    'FontSize',18,...
+    'FontName','Times')
+xlabel('episode',...
+    'FontUnits','points',...
+    'interpreter','latex',...
+    'FontWeight','normal',...
+    'FontSize',18,...
+    'FontName','Times')
+legend('0.05','0.00');
+set(gca,...
+    'FontSize',10);
+%ylim([-1.5 1.5])
+
+name = ['figures/', 'randomVsWorkerRewardPreDetermined', '.eps'];
+print('-depsc2', name);
+
+%% Continous worker rewards, better pre-determined supply depots, 5 nines 
+data = load("data/dqnExploreMin-0.20.csv")
+[n, p] = size(data);
+m = n
+scores=data(1:m,1);
+supply=data(1:m,4);
+steps=data(1:m,3);
+explorationDecay=0.99999;
+
+clf
+scatter([1:m], scores, 20, supply, 'filled');
+hold on
+yyaxis right
+plot([1:m], max(1*explorationDecay.^steps, 0.20));
+yyaxis left
+stepSize=100
+means = []
+deviations = []
+j = 1
+for i=1:stepSize:m-stepSize
+    i
+    means(j)=mean(scores(i:i+stepSize));
+    deviations(j)=std(scores(i:i+stepSize));
+    j = j + 1;
+end
+means;
+deviations;
+%eb = errorbar([1:stepSize:m-stepSize] + stepSize/2, means, deviations * 2)
+%eb.Color = 'black';
+%eb.CapSize = stepSize/4;
+hold off
+c = colorbar;
+%yyaxis left
+
+title('',...
+    'FontUnits','points',...
+    'interpreter','latex',...
+    'FontWeight','normal',...
+    'FontSize',12,...
+    'FontName','Times')
+ylabel({'score'},...
+    'FontUnits','points',...
+    'interpreter','latex',...
+    'FontWeight','normal',...
+    'FontSize',18,...z
+    'FontName','Times')
+xlabel('episode',...
+    'FontUnits','points',...
+    'interpreter','latex',...
+    'FontWeight','normal',...
+    'FontSize',18,...
+    'FontName','Times')
+ylabel(c, 'workers');
+set(gca,...
+    'FontSize',10);
+%xlim([0 710])
+
+name = ['figures/', 'dqnExploreMin-0.20', '.eps'];
+print('-depsc2', name);
+%print('BarPlot', '-dpng');
+
+%clf
+m1 = mean(scores)
+s1 = std(scores)
+hold on
+%histogram(scores(1000:1400), 'BinWidth', 200)
+%histogram(scores(300:700), 'BinWidth', 200)
+hold off
