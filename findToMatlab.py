@@ -1,5 +1,5 @@
 import re 
-logFile = open("win-loss.log", "r")
+logFile = open("win-loss-2.wllog", "r")
 
 #print("score time")
 #line = logFile.readline()
@@ -10,7 +10,7 @@ for line in logFile:
     episodes += 1
     if (episodes % 1 != 0): # Rendering all points takes time in LaTeX
         continue
-    line = re.search(r"[^/]+$", line).group(0).replace('.h5\n', '')
+    line = re.search(r"[^/]+$", line).group(0).replace('\n', '')
     words = line.split('-')
     nr = words[0]
     trainLoss = words[1].replace('L[', '').replace(']', '')

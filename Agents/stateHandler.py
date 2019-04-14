@@ -5,6 +5,8 @@ import random
 from google.protobuf.json_format import ParseDict
 import sys
 from simpleSC2API import *
+import keras
+import time
 
 client = pymongo.MongoClient()
 db = client["replay_database"]
@@ -28,6 +30,115 @@ players.create_index("replay_name")
 #This sorts the database I believe, so it might take some time to run these lines when running this for the first time.
 states.create_index([("replay_name", pymongo.ASCENDING), ("frame_id", pymongo.ASCENDING)])
 scores.create_index([("replay_name", pymongo.ASCENDING), ("frame_id", pymongo.ASCENDING)])
+statesLength = states.find().count()
+
+
+#blbl = states.find()
+#for b in blbl:
+#    states.update({"_id": b["_id"]}, {"$set": {"rng": np.random.randint(0,9999999)}})
+
+#exit()
+
+
+class DataGenerator(keras.utils.Sequence):
+    def __init__(self, stateCount = statesLength, batchSize = 30):
+        self.stateCount = stateCount
+        self.batchSize = batchSize
+
+        #print("Indexing database, please wait")
+        #states.create_index([("rng", pymongo.ASCENDING)])
+        self.statesCursor = states.find()
+        self.statesCursor.sort([("rng", pymongo.ASCENDING)])
+        self.statesCursor.batch_size(self.batchSize)
+
+    def __len__(self):
+        return self.stateCount//self.batchSize
+
+    def on_epoch_end(self):
+        self.statesCursor = states.find()
+        self.statesCursor.batch_size(self.batchSize)
+
+        self.statesCursor.sort([("rng", pymongo.ASCENDING)])
+        #states.create_index([("rng", pymongo.ASCENDING)])
+
+        self.indexes = np.arange(self.stateCount)
+        np.random.shuffle(self.indexes)
+
+    def transposeBatch(self, data):
+        return (np.array([row[0] for row in data]), np.array([row[1] for row in data]), np.array([row[2] for row in data]))
+
+    # Queries mongoDB for the given state.
+    def getNextState(self, statesCursor):
+
+
+        #startTime = time.time()
+
+        state = statesCursor.next()
+
+        #print("Get " + str(time.time() - startTime))
+        #startTime = time.time()
+        state["rng"] = np.random.randint(0, self.stateCount)
+        states.replace_one({"_id": state["_id"]}, state) #Update RNG to shuffle later
+
+        #print("Set " + str(time.time() - startTime))
+
+        replayID = state["replay_name"]
+        playerID = state["player_id"]
+        frameID = state["frame_id"]
+
+        playerState = players.find({'replay_name': replayID, 'player_id': playerID})
+        winLoss = -9999
+        for playerdata in playerState:
+            winLoss = playerdata["result"]
+        if winLoss == -9999:
+            print("Error reading winloss")
+
+        #print(str(replayID) + "  " + str(playerID) + "  " + str(frameID))
+
+        # Minimap data
+        miniFactions = pickle.loads(state["minimap"]["factions"])
+        miniVision = pickle.loads(state["minimap"]["vision"])
+        miniSelected = pickle.loads(state["minimap"]["selected"])
+        # Screen data
+        screenFactions = pickle.loads(state["screen"]["factions"])
+        screenVision = pickle.loads(state["screen"]["vision"])
+        screenSelected = pickle.loads(state["screen"]["selected"])
+        screenHp = pickle.loads(state["screen"]["hp"])
+        screenUnits = pickle.loads(state["screen"]["units"])
+        screenHeight = pickle.loads(state["screen"]["height"])
+        # Raw data
+        minerals = state["resources"]["minerals"]
+        vespene = state["resources"]["vespene"]
+        supTotal = state["supply"]["total"]
+        supUsed = state["supply"]["used"]
+        supArmy = state["supply"]["army"]
+        supWorkers = state["supply"]["workers"]
+        # FrameID
+        concMinimap = np.array([miniFactions, miniVision, miniSelected])
+        concScreen = np.array([screenFactions, screenVision, screenSelected, screenHp, screenUnits, screenHeight])
+        concRaw = np.array([frameID, minerals, vespene, supTotal, supUsed, supArmy, supWorkers])
+        return [concRaw, concMinimap, concScreen, winLoss]
+
+    def data_generation(self, statesCursor):
+        batch = []
+        for i in range(0,self.batchSize):
+            temp = concatQueriedState(normalizeQueryState(self.getNextState(statesCursor)))
+            if temp != None:
+                batch.append(temp)
+
+        numInput, target, input = self.transposeBatch(batch)
+        input = np.moveaxis(input, 1, 3)
+
+        return [numInput, input], target
+
+
+    def __getitem__(self, batchNumber):
+
+        x,y = self.data_generation(self.statesCursor)
+        return x,y
+
+
+
 
 
 #Initialize trainingReplay_ids as all replay_ids.
@@ -135,7 +246,7 @@ def concatQueriedState(data):
 def concatIngameState(data):
     return (data[0], np.concatenate((data[1],data[2])))
 
-#Queries mongoDB for the given state.
+
 def queryState(replayID, frameID, playerID):
     state = states.find({'replay_name':replayID, 'frame_id':frameID, 'player_id':playerID})
 
@@ -177,3 +288,7 @@ def queryState(replayID, frameID, playerID):
     print(replayID)
     print(frameID)
     print(playerID)
+
+# print((db.states.find().count()))
+# print(queryStateByIndex(100))
+# exit()
