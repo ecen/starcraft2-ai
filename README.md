@@ -5,19 +5,24 @@ Repository for bachelor-degree project with the goal of developing a StarCraft 2
 
 # Agents
 
-* CNN = Convolutional Network Agent
 * DQN = Deep Q network agent
+* CNN = Convolutional Network Agent
 * MarineAgent = Marine Agent
 * WinLoss = Win/Loss Agent
-## CNN
 
 ## DQN
+An implementation of reinforcement learning using Deep Q-Learning, the agent plays a restricted version of the `CollectMineralsAndGas` PySC2 minigame where actions and input are greatly abstracted.
+
+## CNN
+A modified version of the DQN agent where input isn't abstracted, instead this uses PySC2's image data ('feature layers') as well as some numeric data (such as supply) as input.
 
 ## MarineAgent
 This is a very basic scripted agent which builds a couple of marines and then selects all units and attacks the enemy base. Due to its simplicity it will only work on one of the two spawn points on the map. This is mostly used to look at the Win/Loss agents outputs but it's also a simple demonstration of how to use the simple API. It is possible to manually play the game while this is running if one wants to manually test the Win/Loss agent further.
 
 
 ## Win/Loss Agent
+This agent attempts, when given a single state of the game in the form of some of PySC2's feature layers as well as some numeric data, to predict if the player will win or lose the match. Current structure is a convolutional network for the image data combined with a fully connected network for the numeric data, outputs 0 for loss and 1 for win.
+
 ### How to
 > 
 1. Build a replay database, see sc2reaper branch
