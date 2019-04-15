@@ -1,5 +1,37 @@
 from pysc2.lib import actions, features, units
 
+screenWidth = 0
+screenHeight = 0
+miniWidth = 0
+miniHeight = 0
+def initAPI(screenWidth_, screenHeight_, miniWidth_, miniHeight_):
+    global screenWidth, screenHeight, miniWidth, miniHeight
+    screenHeight = screenHeight_
+    screenWidth = screenWidth_
+    miniWidth = miniWidth_
+    miniHeight = miniHeight_
+
+def _clipScreenCoordinates(x,y):
+    if x >= screenWidth:
+        x = screenWidth-1
+    elif x < 0:
+        x = 0
+    if y >= screenHeight:
+        y = screenHeight-1
+    elif y < 0:
+        y = screenHeight
+    return x,y
+def _clipMiniCoordinates(x,y):
+    if x >= miniWidth:
+        x = miniWidth-1
+    elif x < 0:
+        x = 0
+    if y >= miniHeight:
+        y = miniHeight-1
+    elif y < 0:
+        y = miniHeight
+    return x,y
+
 #</editor-fold>
 #<editor-fold> desc="Helper functions"
 # -------------------------------------Action Space-------------------------------------------------------------
@@ -32,16 +64,18 @@ def actMultiBuildBarrackReactor(obs):
 #--------------------------------------"Smart" Actions---------------------------------------------------------
 def smartSelectAllUnit(obs, unitType):
     #units.Terran.SCV
-    allUnits = [unit for unit in obs.observation.feature_units if unit.unit_type == unitType]
-    if len(allUnits) > 0:
-        return actSelectPoint_selectAllType(obs, allUnits[0].x, allUnits[0].y)
+    allUnitsOfType = [unit for unit in obs.observation.feature_units if unit.unit_type == unitType]
+    if len(allUnitsOfType) > 0:
+        x,y = _clipScreenCoordinates(allUnitsOfType[0].x, allUnitsOfType[0].y)
+        return actSelectPoint_selectAllType(obs, x, y)
     return actions.FUNCTIONS.no_op()
 
 def smartSelectAddAllUnit(obs, unitType):
     #units.Terran.SCV
-    allUnits = [unit for unit in obs.observation.feature_units if unit.unit_type == unitType]
-    if len(allUnits) > 0:
-        return actSelectPoint_addAllType(obs, allUnits[0].x, allUnits[0].y)
+    allUnitsOfType = [unit for unit in obs.observation.feature_units if unit.unit_type == unitType]
+    if len(allUnitsOfType) > 0:
+        x,y = _clipScreenCoordinates(allUnitsOfType[0].x, allUnitsOfType[0].y)
+        return actSelectPoint_addAllType(obs, x, y)
     return actions.FUNCTIONS.no_op()
 
 def actSelectAllBarracks(obs):
@@ -296,6 +330,7 @@ def actCancel(obs, x, y):
 
 def actSelectPoint(obs, x, y):
     if actIsAvailable(obs, actions.FUNCTIONS.select_point.id):
+        x,y = _clipScreenCoordinates(x,y)
         return actions.FUNCTIONS.select_point("select", [x,y])
     else:
         return actions.FUNCTIONS.no_op()
@@ -303,16 +338,19 @@ def actSelectPoint(obs, x, y):
 #TODO: 'Sub' functions of actSelectPoint haven't been tested.
 def actSelectPoint_toggle(obs, x, y):
     if actIsAvailable(obs, actions.FUNCTIONS.select_point.id):
+        x,y = _clipScreenCoordinates(x,y)
         return actions.FUNCTIONS.select_point("toggle", [x,y])
     else:
         return actions.FUNCTIONS.no_op()
 def actSelectPoint_selectAllType(obs, x, y):
     if actIsAvailable(obs, actions.FUNCTIONS.select_point.id):
+        x,y = _clipScreenCoordinates(x,y)
         return actions.FUNCTIONS.select_point("select_all_type", [x, y])
     else:
         return actions.FUNCTIONS.no_op()
 def actSelectPoint_addAllType(obs, x, y):
     if actIsAvailable(obs, actions.FUNCTIONS.select_point.id):
+        x,y = _clipScreenCoordinates(x,y)
         return actions.FUNCTIONS.select_point("add_all_type", [x, y])
     else:
         return actions.FUNCTIONS.no_op()
@@ -320,6 +358,7 @@ def actSelectPoint_addAllType(obs, x, y):
 
 def actHarvestScreen(obs, x, y):
     if actIsAvailable(obs, actions.FUNCTIONS.Harvest_Gather_screen.id):
+        x,y = _clipScreenCoordinates(x,y)
         return actions.FUNCTIONS.Harvest_Gather_screen("now",(x,y))
     else:
         return actions.FUNCTIONS.no_op()
@@ -370,9 +409,6 @@ def actIsAvailable(obs, action):
         return True
     return False
 
-
-def executeMultistepAction():
-    return False  # TODO: Implement, put all logic for
 
 
 def numberToPoint(number, numberRepresentingOrigin, areaWidth, areaHeight):
@@ -511,8 +547,44 @@ def getPlayerID(obs):
 def getFreeWorkers(obs):
     return obs.observation.player.idle_worker_count
 
+def _getSelectedCount(obs, unitType):
+    if (len(obs.observation.multi_select) > 0):
+        i = 0
+        for unit in obs.observation.multi_select:
+            if unit.unit_type == unitType:
+                i+=1
+        return i
+
+    if (len(obs.observation.single_select) > 0):
+        i = 0
+        for unit in obs.observation.single_select:
+            if unit.unit_type == unitType:
+                i += 1
+        return i
+
+    return 0
+def getSelectMarineCount(obs):
+    return _getSelectedCount(obs, units.Terran.Marine)
+
+def getSelectSCVCount(obs):
+    return _getSelectedCount(obs, units.Terran.SCV)
+
 def actSelectIdleWorker(obs):
     if actIsAvailable(obs, actions.FUNCTIONS.select_idle_worker.id):
         return actions.FUNCTIONS.select_idle_worker("select")
     else:
         return actions.FUNCTIONS.no_op()
+
+def getUnitCount(obs, unitType):
+    allUnitsOfType = [unit for unit in obs.observation.feature_units if unit.unit_type == unitType]
+    return len(allUnitsOfType)
+
+
+def getBarrackCount(obs):
+    return getUnitCount(obs, units.Terran.Barracks)
+def getMarineCount(obs):
+    return getUnitCount(obs, units.Terran.Marine)
+def getSCVCount(obs):
+    return getUnitCount(obs, units.Terran.SCV)
+def getSupplyDepotCount(obs):
+    return getUnitCount(obs, units.Terran.SupplyDepot)

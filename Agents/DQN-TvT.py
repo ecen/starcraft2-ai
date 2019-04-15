@@ -23,11 +23,14 @@ trainingStartTime = time()
 stepCounter = 0
 
 SUPPLY_LOCATIONS = [
-        (30, 8), (34, 8), (38, 8), (42, 8), (46, 8), (50, 8),
-        (30, 12), (34, 12), (38, 12), (42, 12), (46, 12), (50, 12), 
-        (30, 16), (34, 16), (38, 16), (42, 16), (46, 16), (50, 16), 
-        (30, 20), (34, 20), (38, 20), (42, 20), (46, 20), (50, 20)
+        (60, 8),
+        (60, 12),
+        (60, 18),
+        (60, 24)
     ]
+BARRACK_LOCATIONS = [(30, 50), (40, 50), (50, 50)]
+
+BASE_LOCATIONS_MINI = [(16,24), (42,24), (22,40),(48,40)]
 
 #<editor-fold desc="Network"
 ####Most code for DQNSolver from https://github.com/gsurma/cartpole####
@@ -47,11 +50,14 @@ BATCH_SIZE = 20
 EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.2
 EXPLORATION_DECAY = 0.99999
+DIMENSIONS = 64
+GAMESTEPS = 15000
+
+initAPI(DIMENSIONS,DIMENSIONS,DIMENSIONS,DIMENSIONS)
 
 loadNetworkOnlyExploit = False #TODO True if loading trained network
 class DQNSolver:
     def __init__(self, observation_space, action_space):
-
         self.action_space = action_space
         self.memory = deque(maxlen=MEMORY_SIZE)
         global loadNetworkOnlyExploit
@@ -79,10 +85,7 @@ class DQNSolver:
         if np.random.rand() < self.exploration_rate:
             return random.randrange(self.action_space)
         q_values = self.model.predict(state)
-        #print('Q values: {}'.format(q_values))
         return np.argmax(q_values[0])
-        #print('Selecting: {}'.format(np.argmax(q_values[0])))
-        #return getRandomWeightedIndex(q_values[0])
 
     def experience_replay(self):
         if len(self.memory) < BATCH_SIZE:
@@ -93,10 +96,8 @@ class DQNSolver:
             if not terminal:
                 q_update = (reward + GAMMA * np.amax(self.model.predict(state_next)[0]))
 
-            # print('State: {}'.format(state))
             q_values = self.model.predict(state)
             q_values[0][action] = q_update
-            # print('Q_table: {} action: {} Q_update = {} state: {} state_next: {}'.format(q_values,action,q_update,state,state_next))
             self.model.fit(state, q_values, verbose=0)
         self.exploration_rate *= EXPLORATION_DECAY
         self.exploration_rate = max(EXPLORATION_MIN, self.exploration_rate)
@@ -105,18 +106,27 @@ class DQNSolver:
         self.model.save(name+'.h5')
 
 #Size of input
-obsSpace = 4
+obsSpace = 12
 #Size of output /availble actions
-actSpace = 5
+actSpace = 12
 #init of network
 dqn_solver = DQNSolver(obsSpace, actSpace)
+
+
+
 
 class MarineAgent(base_agent.BaseAgent):
     state = None
     action = None
-    justSelectWorker = -1
-    freeWorkersOld = 12
     nextSupplyNr = 0
+    nextBarrackNr = 0
+    stepCounter = 0
+
+    workSupp = 0
+    armySupp = 0
+
+    baseX = 0
+    baseY = 0
 
     def step(self, obs):
         super(MarineAgent, self).step(obs)
@@ -125,7 +135,7 @@ class MarineAgent(base_agent.BaseAgent):
         stepCounter += 1
         if obs.last():
             print(dqn_solver.exploration_rate)
-            score = obs.observation.score_cumulative.collected_minerals
+            score = stepCounter
             if dqn_solver.exploration_rate <= EXPLORATION_MIN:
                 compareResultsAndSave(score)
             # Log score to file
@@ -140,37 +150,56 @@ class MarineAgent(base_agent.BaseAgent):
         if doingMultiAction != False:
             return doingMultiAction
         #</editor-fold>
-
         # <editor-fold> desc="Read game data / input, handle it"
-        newState = np.array([[(min(getMinerals(obs),100)-50)/50, getFreeWorkers(obs)/20, getSupplyFree(obs)/20, self.justSelectWorker]])
-
-        #Reset justSelectWorker variable now that it has been read
-        self.justSelectWorker = -1
+        newState = np.array([[(min(getMinerals(obs),150)-75)/75, getFreeWorkers(obs)/2,
+                              getSupplyFree(obs)/20, getSupplyArmy(obs)/20,
+                              getSupplyWorkers(obs)/20, getSelectSCVCount(obs)/20,
+                              getSelectMarineCount(obs)/20, getBarrackCount(obs)/3,
+                              getSupplyDepotCount(obs)/4, getMarineCount(obs)/20,
+                              getSCVCount(obs)/20, (self.baseX-20)/20]])
 
         # </editor-fold>
         # <editor-fold> desc="Things that should happen on first frame only"
         if obs.first():
+            #Cred to https://itnext.io/build-a-zerg-bot-with-pysc2-2-0-295375d2f58e  for spawn location code
+            player_y, player_x = (obs.observation.feature_minimap.player_relative ==
+                                  features.PlayerRelative.SELF).nonzero()
+            self.baseX = round(player_x.mean())
+            self.baseY = round(player_y.mean())
+
+            global SUPPLY_LOCATIONS, BARRACK_LOCATIONS
+            if self.baseX < 30: #Spawn top left
+                SUPPLY_LOCATIONS = [(60, 8),(60, 12),(60, 18),(60, 24)]
+                BARRACK_LOCATIONS = [(30, 50), (40, 50), (50, 50)]
+                self.baseX = 20
+                self.baseY = 24
+            else: #Spawn bottom right, use opposite locations
+                SUPPLY_LOCATIONS = [(4, 56),(4, 52),(4, 48),(4, 44)]
+                BARRACK_LOCATIONS = [(34, 14), (24, 14), (14, 14)]
+                self.baseX = 40
+                self.baseY = 46
+
             #Currently saves the first state and do no_op.
             #Reason behind this is that the learning requires info on a state and the following state
             #And because we can't know the future state before reaching it(easily anyways), might as well
             #use the last state and the current state instead.
             self.state = newState
             self.action = 0
-            self.justSelectWorker = -1
-            self.freeWorkersOld = 12
             self.nextSupplyNr = 0
-            random.seed(1) # Use same random seed every time.
+            self.nextBarrackNr = 0
+            self.stepCounter = 0
+            self.workSupp = getSupplyWorkers(obs)
+            self.marineOld = getSupplyArmy(obs)
+            #random.seed(1) # Use same random seed every time.
             return actions.FUNCTIONS.no_op()
         # </editor-fold>
         #<editor-fold> desc="Calculate reward"
-
-        #reward = ((getSupplyWorkers(obs)-(getFreeWorkers(obs)*2))/50)#*(1)+getMinerals(obs)/5000)
-        reward = (abs(self.freeWorkersOld - getFreeWorkers(obs)))*(0.5+getSupplyWorkers(obs)/50)
-        self.freeWorkersOld = getFreeWorkers(obs)
-        print (reward)
-        #reward = self.justSelectWorker
-
-
+        armySupp = getSupplyArmy(obs)
+        workSupp = getSupplyWorkers(obs)
+        reward = (armySupp -self.armySupp)/10+ (workSupp - self.workSupp) / 15
+        self.armySupp = armySupp
+        self.workSupp = workSupp
+        print(reward)
         #</editor-fold>
 
         newAction = dqn_solver.act(newState) #Use network to get a new action
@@ -183,7 +212,10 @@ class MarineAgent(base_agent.BaseAgent):
             dqn_solver.remember(self.state,self.action,reward,newState,False)
 
             if obs.last():
-                dqn_solver.remember(self.state,self.action,reward,None,True)
+                #Big negative reward for losing early
+                endReward = (stepCounter-GAMESTEPS+500)/2000
+                print("End Reward: "+ str(endReward))
+                dqn_solver.remember(self.state,self.action, endReward,None,True)
 
         #Save current state and action that will be taken so that it can
         #be used on the next frame.
@@ -194,13 +226,38 @@ class MarineAgent(base_agent.BaseAgent):
         if not loadNetworkOnlyExploit:
             dqn_solver.experience_replay()
         # </editor-fold>
-
-
-
+        stepCounter += 1
         # <editor-fold> desc="Action usage"
+        if self.action == 12:
+            return actMultiTrainMarine(obs)
+        if self.action == 11:
+            x = BASE_LOCATIONS_MINI[0][0]
+            y = BASE_LOCATIONS_MINI[0][1]
+            return actAttackMinimap(obs, x, y)
+        if self.action == 10:
+            x = BASE_LOCATIONS_MINI[1][0]
+            y = BASE_LOCATIONS_MINI[1][1]
+            return actAttackMinimap(obs, x, y)
+        if self.action == 9:
+            x = BASE_LOCATIONS_MINI[2][0]
+            y = BASE_LOCATIONS_MINI[2][1]
+            return actAttackMinimap(obs, x, y)
+        if self.action == 8:
+            x = BASE_LOCATIONS_MINI[3][0]
+            y = BASE_LOCATIONS_MINI[3][1]
+            return actAttackMinimap(obs, x, y)
+        if self.action == 7: #Add select all SCVs
+            return actSelectAddAllSCVs(obs)
+        if self.action == 6: #Select marines
+            return actSelectAllMarines(obs)
+        if self.action == 5: #Build barracks
+            x = BARRACK_LOCATIONS[self.nextBarrackNr][0]
+            y = BARRACK_LOCATIONS[self.nextBarrackNr][1]
+            self.nextBarrackNr += 1
+            if (self.nextBarrackNr >= len(BARRACK_LOCATIONS)):
+                self.nextBarrackNr = 0
+            return actBuildBarracks(obs, x, y)
         if self.action == 4: # Build supply
-            #x = random.randrange(30,50)
-            #y = random.randrange(8,25)
             x = SUPPLY_LOCATIONS[self.nextSupplyNr][0]
             y = SUPPLY_LOCATIONS[self.nextSupplyNr][1]
             self.nextSupplyNr += 1
@@ -210,14 +267,15 @@ class MarineAgent(base_agent.BaseAgent):
         elif self.action == 3: # Order selected worker to mine
             minerals = [unit for unit in obs.observation.feature_units
                         if unit.unit_type == units.Neutral.MineralField]
+            if len(minerals) < 1:
+                return actions.FUNCTIONS.no_op()
             rMineral = random.choice(minerals)
             return actHarvestScreen(obs,rMineral.x,rMineral.y)
         elif self.action == 2: # Select worker
-            self.justSelectWorker = 1
             return actSelectIdleWorker(obs)
             
         # Train worker
-        posActions = [actions.FUNCTIONS.no_op(),actMultiTrainSCV(obs)]
+        posActions = [actMoveCamera(obs, self.baseX, self.baseY),actMultiTrainSCV(obs)]
         return posActions[self.action]
         # </editor-fold>
 
@@ -249,12 +307,14 @@ def main(unused_argv):
             i = i+1
             print(i)
             with sc2_env.SC2Env(
-                    map_name="CollectMineralsAndGas",
-                    players=[sc2_env.Agent(sc2_env.Race.terran)],
+                    map_name="Simple64",
+                    players=[sc2_env.Agent(sc2_env.Race.terran),
+                             sc2_env.Bot(sc2_env.Race.terran,
+                                         sc2_env.Difficulty.very_easy)],
                     agent_interface_format=features.AgentInterfaceFormat(
-                        feature_dimensions=features.Dimensions(screen=84, minimap=64), use_feature_units=True),
+                        feature_dimensions=features.Dimensions(screen=DIMENSIONS, minimap=DIMENSIONS), use_feature_units=True),
                     step_mul=16,
-                    game_steps_per_episode=0,
+                    game_steps_per_episode=GAMESTEPS,
                     visualize=False) as env:
 
                 agent.setup(env.observation_spec(), env.action_spec())
