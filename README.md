@@ -3,9 +3,14 @@ Repository for bachelor-degree project with the goal of developing a StarCraft 2
 
 # Simple SC2 API
 This is essentially a wrapper for PySC2 to make it immediately useable for a simple TvT agent. Has the following features:
-* Easy to use functions for getting PySC2 data or using PySC2 actions
+* Easy to use functions for getting PySC2 data or using PySC2 actions.
 * Some abstracted actions like selecting all of a unit.
-* Support for abstracting actions that require multiple game steps to execute, like selecting a barrack and building a marine. This also serves as a framework to develop more actions like this.
+* Support for abstracting actions that require multiple game steps to execute, like selecting a barrack and building a marine. This also serves as a framework to develop more actions like this. Note that this requires the code at the top of the step functions in the agents: 
+```
+doingMultiAction = executeMultiAction(obs)
+if doingMultiAction != False:
+    return doingMultiAction
+```
 
 # Agents
 
