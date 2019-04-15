@@ -21,6 +21,8 @@ def actMultiTrainMarine(obs):
 ```
 The return statement returns the first action that should be executed, in this case selecting all barracks. In order to perform more actions afterwards they are added to the multiActions list. The code that executes the remaining actions uses pop() which removes the last action in the list, thus this list has to be in reversed order (last action first, first action last).
 
+## Issues
+* There is currently nothing checking if a coordinate is out of bounds. A function for this exists in the dqnMarines' version of the API but a better implementation of said function would be preferred.
 # Agents
 
 * DQN = Deep Q network agent
