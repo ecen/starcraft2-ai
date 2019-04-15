@@ -43,6 +43,13 @@ FRAME_HEIGHT = 64
 STATE_LENGTH = 9
 NUMERIC_INPUT_LENGTH = 7
 
+SUPPLY_LOCATIONS = [
+        (30, 8), (34, 8), (38, 8), (42, 8), (46, 8), (50, 8),
+        (30, 12), (34, 12), (38, 12), (42, 12), (46, 12), (50, 12), 
+        (30, 16), (34, 16), (38, 16), (42, 16), (46, 16), (50, 16), 
+        (30, 20), (34, 20), (38, 20), (42, 20), (46, 20), (50, 20)
+    ]
+
 # Log variables
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H.%M.%S")
 trainingStartTime = time()
@@ -162,6 +169,7 @@ class MarineAgent(base_agent.BaseAgent):
     action = None
     justSelectWorker = -1
     freeWorkersOld = 12
+    nextSupplyNr = 0
 
     def step(self, obs):
         super(MarineAgent, self).step(obs)
@@ -227,6 +235,9 @@ class MarineAgent(base_agent.BaseAgent):
             # use the last state and the current state instead.
             self.state = newState
             self.action = 0
+            self.justSelectWorker = -1
+            self.freeWorkersOld = 12
+            self.nextSupplyNr = 0
             return actions.FUNCTIONS.no_op()
         # </editor-fold>
         # <editor-fold> desc="Calculate reward"
@@ -262,8 +273,10 @@ class MarineAgent(base_agent.BaseAgent):
 
         # <editor-fold> desc="Action usage"
         if self.action == 4:
-            x = random.randrange(30, 50)
-            y = random.randrange(8, 25)
+            #x = random.randrange(30, 50)
+            #y = random.randrange(8, 25)
+            x = SUPPLY_LOCATIONS[self.nextSupplyNr][0]
+            y = SUPPLY_LOCATIONS[self.nextSupplyNr][1]
             return actBuildSupplyDepot(obs, x, y)
         elif self.action == 3:
             minerals = [unit for unit in obs.observation.feature_units
