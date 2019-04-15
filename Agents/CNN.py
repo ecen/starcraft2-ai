@@ -46,6 +46,7 @@ NUMERIC_INPUT_LENGTH = 7
 # Log variables
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H.%M.%S")
 trainingStartTime = time()
+stepCounter = 0
 
 
 # TODO-----------------------------------------------------------Change this if you want to load a network that has already been trained.
@@ -165,6 +166,8 @@ class MarineAgent(base_agent.BaseAgent):
     def step(self, obs):
         super(MarineAgent, self).step(obs)
         global dqn_solver  # Let python access the global variable dqn_solver
+        global stepCounter
+        stepCounter += 1
         if obs.last():
             print(dqn_solver.exploration_rate)
             score = obs.observation.score_cumulative.collected_minerals
@@ -173,8 +176,20 @@ class MarineAgent(base_agent.BaseAgent):
             # Log score to file
             t1 = time() - trainingStartTime
             logFile = open(timestamp + ".log", "a+")
-            logFile.write("%4d %.4f %7ds\n" %
-                          (score, dqn_solver.exploration_rate, t1))
+            logFile.write( (
+                "score=%4d, "
+                "explore=%.4f, "
+                "time=%7ds, "
+                "steps=%8d, "
+                "supplyWorkers=%2d\n"
+                ) % (
+                    score, 
+                    dqn_solver.exploration_rate, 
+                    t1, 
+                    stepCounter, 
+                    getSupplyWorkers(obs)
+                )
+            )
             logFile.close()
 
         # <editor-fold> desc="Multistep action stuff, leave it alone"
