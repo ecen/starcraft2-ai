@@ -18,7 +18,7 @@ This is a very basic scripted agent which builds a couple of marines and then se
 
 
 ## Win/Loss Agent
-
+### How to
 > 
 1. Build a replay database, see sc2reaper branch
 2. Make sure MonogDB is running, then run WinLoss.py to start training. This will save a network as a \*.h5 file in the same directory at the end of every epoch.
