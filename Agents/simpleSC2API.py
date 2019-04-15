@@ -19,7 +19,7 @@ def _clipScreenCoordinates(x,y):
     if y >= screenHeight:
         y = screenHeight-1
     elif y < 0:
-        y = screenHeight
+        y = 0
     return x,y
 def _clipMiniCoordinates(x,y):
     if x >= miniWidth:
@@ -29,7 +29,7 @@ def _clipMiniCoordinates(x,y):
     if y >= miniHeight:
         y = miniHeight-1
     elif y < 0:
-        y = miniHeight
+        y = 0
     return x,y
 
 #</editor-fold>
