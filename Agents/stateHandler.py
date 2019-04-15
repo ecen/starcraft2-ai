@@ -45,6 +45,8 @@ class DataGenerator(keras.utils.Sequence):
         self.stateCount = stateCount
         self.batchSize = batchSize
 
+        #self.i = 0
+        #self.e = 1
         #print("Indexing database, please wait")
         #states.create_index([("rng", pymongo.ASCENDING)])
         self.statesCursor = states.find()
@@ -55,14 +57,16 @@ class DataGenerator(keras.utils.Sequence):
         return self.stateCount//self.batchSize
 
     def on_epoch_end(self):
+        self.statesCursor.close()
         self.statesCursor = states.find()
         self.statesCursor.batch_size(self.batchSize)
 
         self.statesCursor.sort([("rng", pymongo.ASCENDING)])
         #states.create_index([("rng", pymongo.ASCENDING)])
-
         self.indexes = np.arange(self.stateCount)
         np.random.shuffle(self.indexes)
+
+        time.sleep(3)
 
     def transposeBatch(self, data):
         return (np.array([row[0] for row in data]), np.array([row[1] for row in data]), np.array([row[2] for row in data]))
@@ -70,17 +74,11 @@ class DataGenerator(keras.utils.Sequence):
     # Queries mongoDB for the given state.
     def getNextState(self, statesCursor):
 
-
-        #startTime = time.time()
-
         state = statesCursor.next()
 
-        #print("Get " + str(time.time() - startTime))
-        #startTime = time.time()
         state["rng"] = np.random.randint(0, self.stateCount)
         states.replace_one({"_id": state["_id"]}, state) #Update RNG to shuffle later
 
-        #print("Set " + str(time.time() - startTime))
 
         replayID = state["replay_name"]
         playerID = state["player_id"]
