@@ -1,0 +1,87 @@
+score=2815, explore=0.9724, time=     82s, steps=     421, supplyWorkers=23
+score=2495, explore=0.9424, time=    170s, steps=     842, supplyWorkers=23
+score=1375, explore=0.9150, time=    251s, steps=    1263, supplyWorkers=23
+score=2730, explore=0.8871, time=    336s, steps=    1684, supplyWorkers=23
+score=2510, explore=0.8603, time=    421s, steps=    2105, supplyWorkers=23
+score=2190, explore=0.8354, time=    502s, steps=    2526, supplyWorkers=23
+score=2190, explore=0.8110, time=    584s, steps=    2947, supplyWorkers=23
+score=2285, explore=0.7870, time=    668s, steps=    3368, supplyWorkers=23
+score=2200, explore=0.7638, time=    750s, steps=    3789, supplyWorkers=23
+score=2400, explore=0.7409, time=    835s, steps=    4210, supplyWorkers=23
+score=3285, explore=0.7183, time=    920s, steps=    4631, supplyWorkers=23
+score=2075, explore=0.6975, time=   1002s, steps=    5052, supplyWorkers=15
+score=1185, explore=0.6775, time=   1083s, steps=    5473, supplyWorkers=23
+score=1145, explore=0.6582, time=   1162s, steps=    5894, supplyWorkers=23
+score=2535, explore=0.6385, time=   1246s, steps=    6315, supplyWorkers=23
+score=2135, explore=0.6197, time=   1329s, steps=    6736, supplyWorkers=23
+score=2065, explore=0.6013, time=   1414s, steps=    7157, supplyWorkers=23
+score=1725, explore=0.5840, time=   1496s, steps=    7578, supplyWorkers=17
+score=3080, explore=0.5667, time=   1580s, steps=    7999, supplyWorkers=23
+score=2805, explore=0.5498, time=   1665s, steps=    8420, supplyWorkers=23
+score=2440, explore=0.5335, time=   1750s, steps=    8841, supplyWorkers=23
+score=1505, explore=0.5181, time=   1831s, steps=    9262, supplyWorkers=23
+score=1645, explore=0.5034, time=   1913s, steps=    9683, supplyWorkers=23
+score=1750, explore=0.4890, time=   1993s, steps=   10104, supplyWorkers=23
+score=1675, explore=0.4745, time=   2077s, steps=   10525, supplyWorkers=23
+score=2355, explore=0.4605, time=   2160s, steps=   10946, supplyWorkers=23
+score=1735, explore=0.4478, time=   2238s, steps=   11367, supplyWorkers=23
+score=2965, explore=0.4341, time=   2324s, steps=   11788, supplyWorkers=23
+score=1835, explore=0.4215, time=   2407s, steps=   12209, supplyWorkers=23
+score=2055, explore=0.4090, time=   2491s, steps=   12630, supplyWorkers=23
+score=3225, explore=0.3967, time=   2577s, steps=   13051, supplyWorkers=23
+score=2540, explore=0.3854, time=   2658s, steps=   13472, supplyWorkers=23
+score=1275, explore=0.3745, time=   2740s, steps=   13893, supplyWorkers=23
+score=1820, explore=0.3639, time=   2823s, steps=   14314, supplyWorkers=23
+score=1795, explore=0.3536, time=   2905s, steps=   14735, supplyWorkers=23
+score=1670, explore=0.3434, time=   2987s, steps=   15156, supplyWorkers=23
+score= 895, explore=0.3339, time=   3069s, steps=   15577, supplyWorkers=23
+score=3135, explore=0.3238, time=   3157s, steps=   15998, supplyWorkers=23
+score=1225, explore=0.3152, time=   3235s, steps=   16419, supplyWorkers=23
+score=1045, explore=0.3069, time=   3312s, steps=   16840, supplyWorkers=22
+score=1245, explore=0.2980, time=   3394s, steps=   17261, supplyWorkers=23
+score=3190, explore=0.2892, time=   3477s, steps=   17682, supplyWorkers=23
+score=2280, explore=0.2807, time=   3563s, steps=   18103, supplyWorkers=23
+score=3270, explore=0.2721, time=   3652s, steps=   18524, supplyWorkers=23
+score=2340, explore=0.2641, time=   3734s, steps=   18945, supplyWorkers=23
+score=2155, explore=0.2562, time=   3819s, steps=   19366, supplyWorkers=23
+score=1975, explore=0.2487, time=   3905s, steps=   19787, supplyWorkers=23
+score=1850, explore=0.2414, time=   4021s, steps=   20208, supplyWorkers=23
+score=1055, explore=0.2346, time=   4110s, steps=   20629, supplyWorkers=18
+score=1745, explore=0.2280, time=   4194s, steps=   21050, supplyWorkers=23
+score=1545, explore=0.2221, time=   4270s, steps=   21471, supplyWorkers=15
+score=1385, explore=0.2156, time=   4355s, steps=   21892, supplyWorkers=23
+score=2295, explore=0.2092, time=   4440s, steps=   22313, supplyWorkers=23
+score=1365, explore=0.2032, time=   4523s, steps=   22734, supplyWorkers=23
+score=2055, explore=0.1970, time=   4611s, steps=   23155, supplyWorkers=23
+score=1340, explore=0.1915, time=   4691s, steps=   23576, supplyWorkers=23
+score=1545, explore=0.1860, time=   4775s, steps=   23997, supplyWorkers=23
+score=2485, explore=0.1807, time=   4857s, steps=   24418, supplyWorkers=23
+score= 890, explore=0.1759, time=   4934s, steps=   24839, supplyWorkers=16
+score= 835, explore=0.1709, time=   5016s, steps=   25260, supplyWorkers=17
+score= 840, explore=0.1667, time=   5087s, steps=   25681, supplyWorkers=15
+score=1670, explore=0.1618, time=   5173s, steps=   26102, supplyWorkers=18
+score=1855, explore=0.1573, time=   5254s, steps=   26523, supplyWorkers=23
+score=1685, explore=0.1528, time=   5336s, steps=   26944, supplyWorkers=23
+score=1920, explore=0.1484, time=   5418s, steps=   27365, supplyWorkers=23
+score=1765, explore=0.1443, time=   5498s, steps=   27786, supplyWorkers=16
+score=2485, explore=0.1397, time=   5589s, steps=   28207, supplyWorkers=23
+score=1945, explore=0.1357, time=   5672s, steps=   28628, supplyWorkers=15
+score= 740, explore=0.1322, time=   5749s, steps=   29049, supplyWorkers=20
+score=  85, explore=0.1289, time=   5830s, steps=   29470, supplyWorkers=14
+score=1110, explore=0.1256, time=   5911s, steps=   29891, supplyWorkers=15
+score=2910, explore=0.1218, time=   6000s, steps=   30312, supplyWorkers=23
+score=1565, explore=0.1185, time=   6082s, steps=   30733, supplyWorkers=23
+score=1565, explore=0.1150, time=   6165s, steps=   31154, supplyWorkers=23
+score=1530, explore=0.1118, time=   6248s, steps=   31575, supplyWorkers=16
+score= 465, explore=0.1090, time=   6323s, steps=   31996, supplyWorkers=15
+score=1780, explore=0.1059, time=   6406s, steps=   32417, supplyWorkers=21
+score=1585, explore=0.1030, time=   6487s, steps=   32838, supplyWorkers=23
+score=1195, explore=0.1003, time=   6566s, steps=   33259, supplyWorkers=15
+score=1285, explore=0.0976, time=   6645s, steps=   33680, supplyWorkers=15
+score=1255, explore=0.0951, time=   6721s, steps=   34101, supplyWorkers=15
+score= 980, explore=0.0927, time=   6796s, steps=   34522, supplyWorkers=15
+score=1605, explore=0.0901, time=   6879s, steps=   34943, supplyWorkers=16
+score=1160, explore=0.0877, time=   6958s, steps=   35364, supplyWorkers=15
+score=1910, explore=0.0850, time=   7045s, steps=   35785, supplyWorkers=23
+score=1110, explore=0.0827, time=   7125s, steps=   36206, supplyWorkers=20
+score=1520, explore=0.0803, time=   7210s, steps=   36627, supplyWorkers=18
