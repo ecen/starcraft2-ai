@@ -85,14 +85,13 @@ class DQNSolver:
             convInput = keras.layers.Input(
                 shape=(STATE_LENGTH, FRAME_WIDTH, FRAME_HEIGHT))
             convMod = keras.layers.Conv2D(
-                32, (3, 3), activation='relu', data_format='channels_first')(convInput)
+                9, (3, 3), activation='relu', data_format='channels_first')(convInput)
             convMod = keras.layers.MaxPooling2D(pool_size=(2, 2))(convMod)
             convMod = keras.layers.Conv2D(
-                64, (3, 3), activation='relu')(convMod)
+                18, (3, 3), activation='relu')(convMod)
             convMod = keras.layers.MaxPooling2D(pool_size=(2, 2))(convMod)
             convMod = keras.layers.Conv2D(
-                128, (1, 1), activation='relu')(convMod)
-            convMod = keras.layers.MaxPooling2D(pool_size=(2, 2))(convMod)
+                36, (1, 1), activation='relu')(convMod)
             convMod = keras.layers.Flatten()(convMod)
             convMod = keras.layers.Dense(512, activation='relu')(convMod)
             convMod = keras.Model(inputs=convInput, outputs=convMod)
