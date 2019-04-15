@@ -22,7 +22,7 @@ You can change what information is stored by changing for example state_extracti
 * So far we've only managed to make sc2reaper work on Windows. It might be possible to get it working on Linux but we haven't succeeded at it. 
 * Currently there is no way to assign data to training/validation sets.
 * It appears that replays have to be of the same version that SC2 is, if SC2 updates then all replays are rendered obsolete. There might be a way to run it on older replays but we haven't succeeded at it.
-
+* sc2reaper doesn't like filenames with strange characters like spaces and will crash failing to find the replay if given one.
 
 # Troubleshooting
 * `Connection already closed. SC2 probably crashed.` make sure that the replay is running the same version is the game.
