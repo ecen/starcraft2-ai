@@ -19,7 +19,7 @@ def actMultiTrainMarine(obs):
     multiActions = [actTrainMarine] #This should be in opposite order of execution, pop takes last element
     return actSelectAllBarracks(obs)
 ```
-The return statement returns the first action that should be executed, in this case selecting all barracks. In order to perform more actions afterwards they are added to the multiActions list. The code that executes the remaining actions use pop() which removes the last action in the list, thus this list has to be in reversed order with the first action at the last index and the last action first.
+The return statement returns the first action that should be executed, in this case selecting all barracks. In order to perform more actions afterwards they are added to the multiActions list. The code that executes the remaining actions uses pop() which removes the last action in the list, thus this list has to be in reversed order (last action first, first action last).
 
 # Agents
 
