@@ -10,7 +10,7 @@ This is a modification/extension of sc2reaper that allows for automatic extracti
 * Windows?
 
 # How to
-* Copy all Python files from this branch into your copy of sc2reaper, replacing the default files.
+* Copy all Python files from this branch into your copy of sc2reaper's sc2reaper folder, replacing the default files.
 * Edit reapAllinDir.py's directory variable to point to the folder containing your replays.
 * Make sure MongoDB is running
 * Run reapAllinDir.py
