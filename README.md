@@ -9,6 +9,12 @@ Repository for bachelor-degree project with the goal of developing a StarCraft 2
 * DQN = Deep Q network agent
 * MarineAgent = Marine Agent
 * WinLoss = Win/Loss Agent
+## CNN
+
+## DQN
+
+## MarineAgent
+This is a very basic scripted agent which builds a couple of marines and then selects all units and attacks the enemy base. Due to its simplicity it will only work on one of the two spawn points on the map. This is mostly used to look at the Win/Loss agents outputs but it's also a simple demonstration of how to use the simple API. It is possible to manually play the game while this is running if one wants to manually test the Win/Loss agent further.
 
 
 ## Win/Loss Agent
