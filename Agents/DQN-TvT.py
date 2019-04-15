@@ -48,7 +48,7 @@ BATCH_SIZE = 20
 #Max = starting chance, is multiplied by decay after each experience replay
 #until it reaches min chance
 EXPLORATION_MAX = 1.0
-EXPLORATION_MIN = 0.2
+EXPLORATION_MIN = 0.1
 EXPLORATION_DECAY = 0.99999
 DIMENSIONS = 64
 GAMESTEPS = 15000
@@ -131,7 +131,7 @@ class MarineAgent(base_agent.BaseAgent):
     def step(self, obs):
         super(MarineAgent, self).step(obs)
         global dqn_solver #Let python access the global variable dqn_solver
-        global stepCounter 
+        global stepCounter
         stepCounter += 1
         if obs.last():
             print(dqn_solver.exploration_rate)
@@ -141,7 +141,7 @@ class MarineAgent(base_agent.BaseAgent):
             # Log score to file
             t1 = time() - trainingStartTime
             logFile = open(timestamp + ".log","a+")
-            logFile.write("score=%4d, explore=%.4f, time=%7ds, steps=%8d, supplyWorkers=%2d\n" % (score, dqn_solver.exploration_rate, t1, stepCounter, getSupplyWorkers(obs)))
+            logFile.write("score=%4d, explore=%.4f, time=%7ds, steps=%8d, supplyWorkers=%3d, supplyArmy=%3d, totalUnits=%4d, totalUnitsKilled=%5d, totalStructuresKilled=%5d\n" % (score, dqn_solver.exploration_rate, t1, stepCounter, getSupplyWorkers(obs), getSupplyArmy(obs), getCumulativeUnits(obs), getCumulativeUnitsKilledValue(obs), getCumulativeStructuresKilledValue(obs)))
             logFile.close()
 
         # <editor-fold> desc="Multistep action stuff, leave it alone"
@@ -273,7 +273,7 @@ class MarineAgent(base_agent.BaseAgent):
             return actHarvestScreen(obs,rMineral.x,rMineral.y)
         elif self.action == 2: # Select worker
             return actSelectIdleWorker(obs)
-            
+
         # Train worker
         posActions = [actMoveCamera(obs, self.baseX, self.baseY),actMultiTrainSCV(obs)]
         return posActions[self.action]

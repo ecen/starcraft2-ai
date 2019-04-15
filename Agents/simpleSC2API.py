@@ -519,27 +519,30 @@ def getFrame(obs):
 def getSupply(obs):
     return obs.observation.player.food_used
 
-
 def getSupplyMax(obs):
     return obs.observation.player.food_cap
-
 
 # Returns difference between current and max, maybe used
 def getSupplyFree(obs):
     return getSupplyMax(obs) - getSupply(obs)
 
-
 def getSupplyWorkers(obs):
     return obs.observation.player.food_workers
-
 
 def getSupplyArmy(obs):
     return obs.observation.player.food_army
 
-
 def getPlayerID(obs):
     return obs.observation.player.player_id
 
+def getCumulativeUnits(obs):
+   return obs.observation.score_cumulative.total_value_units
+
+def getCumulativeUnitsKilledValue(obs):
+   return obs.observation.score_cumulative.killed_value_units
+
+def getCumulativeStructuresKilledValue(obs):
+   return obs.observation.score_cumulative.killed_value_structures
 
 # -----------------------------------END NUMERIC INPUTS-------------------------------
 # -----------------------------------END INPUT SPACE----------------------------------
