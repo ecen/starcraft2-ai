@@ -3,14 +3,23 @@ Repository for bachelor-degree project with the goal of developing a StarCraft 2
 
 # Simple SC2 API
 This is essentially a wrapper for PySC2 to make it immediately useable for a simple TvT agent. Has the following features:
-* Easy to use functions for getting PySC2 data or using PySC2 actions.
+* Easy to use functions for getting PySC2 data or using PySC2 actions. These check if they are available, otherwise returning noop, preventing PySC2 from crashing (which happens if one tries to execute an action that isn't available).
 * Some abstracted actions like selecting all of a unit.
-* Support for abstracting actions that require multiple game steps to execute, like selecting a barrack and building a marine. This also serves as a framework to develop more actions like this. Note that this requires the code at the top of the step functions in the agents: 
+* Support for abstracting actions that require multiple game steps to execute, like selecting a barrack and building a marine. These also serve as a very simple framework to develop more actions like this. Note that this requires the code at the top of the step functions in the agents: 
 ```
 doingMultiAction = executeMultiAction(obs)
 if doingMultiAction != False:
     return doingMultiAction
 ```
+## Multistep Action tutorial
+This is the function that selects a barrack and then trains a marine:
+```
+def actMultiTrainMarine(obs):
+    global multiActions
+    multiActions = [actTrainMarine] #This should be in opposite order of execution, pop takes last element
+    return actSelectAllBarracks(obs)
+```
+The return statement returns the first action that should be executed, in this case selecting all barracks. In order to perform more actions afterwards they are added to the multiActions list. The code that executes the remaining actions use pop() which removes the last action in the list, thus this list has to be in reversed order with the first action at the last index and the last action first.
 
 # Agents
 
