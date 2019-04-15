@@ -1,11 +1,11 @@
 from pysc2.agents import base_agent
 from pysc2.env import sc2_env
-from pysc2.lib import actions, features, units
 import random
 import tensorflow as tf
 import numpy as np
 import os
 import datetime
+from simpleSC2API import *
 
 from collections import deque
 import keras
@@ -20,7 +20,14 @@ from absl import app
 # Log variables
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H.%M.%S")
 trainingStartTime = time()
+stepCounter = 0
 
+SUPPLY_LOCATIONS = [
+        (30, 8), (34, 8), (38, 8), (42, 8), (46, 8), (50, 8),
+        (30, 12), (34, 12), (38, 12), (42, 12), (46, 12), (50, 12), 
+        (30, 16), (34, 16), (38, 16), (42, 16), (46, 16), (50, 16), 
+        (30, 20), (34, 20), (38, 20), (42, 20), (46, 20), (50, 20)
+    ]
 
 #<editor-fold desc="Network"
 ####Most code for DQNSolver from https://github.com/gsurma/cartpole####
@@ -38,8 +45,8 @@ BATCH_SIZE = 20
 #Max = starting chance, is multiplied by decay after each experience replay
 #until it reaches min chance
 EXPLORATION_MAX = 1.0
-EXPLORATION_MIN = 0.05
-EXPLORATION_DECAY = 0.9999
+EXPLORATION_MIN = 0.2
+EXPLORATION_DECAY = 0.99999
 
 loadNetworkOnlyExploit = False #TODO True if loading trained network
 class DQNSolver:
@@ -54,14 +61,15 @@ class DQNSolver:
             #Creation of network, topology stuff goes here
             asd = keras.initializers.VarianceScaling(scale=2) #https://towardsdatascience.com/tutorial-double-deep-q-learning-with-dueling-network-architectures-4c1b3fb7f756
             self.model = Sequential()
-            self.model.add(Dense(32, input_shape=(observation_space,), activation="relu", kernel_initializer=asd))
+            self.model.add(Dense(32, input_shape=(observation_space,), activation="relu", kernel_initializer=asd)) # TODO: Is asd a typo?
             self.model.add(Dense(16, activation="relu", kernel_initializer=asd))
             self.model.add(Dense(self.action_space, activation="linear", kernel_initializer=asd))
             self.model.compile(loss="logcosh", optimizer=Adam(lr=LEARNING_RATE))
 
         else:
             self.exploration_rate = 0
-            self.model = keras.models.load_model("testNetwork4845.h5")          #TODO Path of network to load if loading network
+            #TODO Path of network to load if loading network
+            self.model = keras.models.load_model("testNetwork5005.h5")
 
 
     def remember(self, state, action, reward, next_state, done):
@@ -71,7 +79,10 @@ class DQNSolver:
         if np.random.rand() < self.exploration_rate:
             return random.randrange(self.action_space)
         q_values = self.model.predict(state)
+        #print('Q values: {}'.format(q_values))
         return np.argmax(q_values[0])
+        #print('Selecting: {}'.format(np.argmax(q_values[0])))
+        #return getRandomWeightedIndex(q_values[0])
 
     def experience_replay(self):
         if len(self.memory) < BATCH_SIZE:
@@ -82,9 +93,10 @@ class DQNSolver:
             if not terminal:
                 q_update = (reward + GAMMA * np.amax(self.model.predict(state_next)[0]))
 
+            # print('State: {}'.format(state))
             q_values = self.model.predict(state)
             q_values[0][action] = q_update
-            print('Q_table: {} action: {} Q_update = {} state: {} state_next: {}'.format(q_values,action,q_update,state,state_next))
+            # print('Q_table: {} action: {} Q_update = {} state: {} state_next: {}'.format(q_values,action,q_update,state,state_next))
             self.model.fit(state, q_values, verbose=0)
         self.exploration_rate *= EXPLORATION_DECAY
         self.exploration_rate = max(EXPLORATION_MIN, self.exploration_rate)
@@ -99,25 +111,27 @@ actSpace = 5
 #init of network
 dqn_solver = DQNSolver(obsSpace, actSpace)
 
-
 class MarineAgent(base_agent.BaseAgent):
     state = None
     action = None
     justSelectWorker = -1
     freeWorkersOld = 12
+    nextSupplyNr = 0
 
     def step(self, obs):
         super(MarineAgent, self).step(obs)
         global dqn_solver #Let python access the global variable dqn_solver
+        global stepCounter 
+        stepCounter += 1
         if obs.last():
             print(dqn_solver.exploration_rate)
             score = obs.observation.score_cumulative.collected_minerals
-            if dqn_solver.exploration_rate < 0.06:
+            if dqn_solver.exploration_rate <= EXPLORATION_MIN:
                 compareResultsAndSave(score)
             # Log score to file
             t1 = time() - trainingStartTime
             logFile = open(timestamp + ".log","a+")
-            logFile.write("%4d %.4f %7ds\n" % (score, dqn_solver.exploration_rate, t1))
+            logFile.write("score=%4d, explore=%.4f, time=%7ds, steps=%8d, supplyWorkers=%2d\n" % (score, dqn_solver.exploration_rate, t1, stepCounter, getSupplyWorkers(obs)))
             logFile.close()
 
         # <editor-fold> desc="Multistep action stuff, leave it alone"
@@ -142,6 +156,10 @@ class MarineAgent(base_agent.BaseAgent):
             #use the last state and the current state instead.
             self.state = newState
             self.action = 0
+            self.justSelectWorker = -1
+            self.freeWorkersOld = 12
+            self.nextSupplyNr = 0
+            random.seed(1) # Use same random seed every time.
             return actions.FUNCTIONS.no_op()
         # </editor-fold>
         #<editor-fold> desc="Calculate reward"
@@ -162,10 +180,10 @@ class MarineAgent(base_agent.BaseAgent):
         if not loadNetworkOnlyExploit:
         #Save last state, last action, reward on this state, this state
         #Same as state,action,reward,nextState but backwards
-            dqn_solver.remember(self.state,self.action,0,newState,False)
+            dqn_solver.remember(self.state,self.action,reward,newState,False)
 
             if obs.last():
-                dqn_solver.remember(self.state,self.action,getCumulativeMinerals(obs),None,True)
+                dqn_solver.remember(self.state,self.action,reward,None,True)
 
         #Save current state and action that will be taken so that it can
         #be used on the next frame.
@@ -180,19 +198,25 @@ class MarineAgent(base_agent.BaseAgent):
 
 
         # <editor-fold> desc="Action usage"
-        if self.action == 4:
-            x = random.randrange(30,50)
-            y = random.randrange(8,25)
+        if self.action == 4: # Build supply
+            #x = random.randrange(30,50)
+            #y = random.randrange(8,25)
+            x = SUPPLY_LOCATIONS[self.nextSupplyNr][0]
+            y = SUPPLY_LOCATIONS[self.nextSupplyNr][1]
+            self.nextSupplyNr += 1
+            if (self.nextSupplyNr >= len(SUPPLY_LOCATIONS)):
+                self.nextSupplyNr = 0
             return actBuildSupplyDepot(obs, x, y)
-        elif self.action == 3:
+        elif self.action == 3: # Order selected worker to mine
             minerals = [unit for unit in obs.observation.feature_units
                         if unit.unit_type == units.Neutral.MineralField]
             rMineral = random.choice(minerals)
             return actHarvestScreen(obs,rMineral.x,rMineral.y)
-        elif self.action == 2:
+        elif self.action == 2: # Select worker
             self.justSelectWorker = 1
             return actSelectIdleWorker(obs)
-
+            
+        # Train worker
         posActions = [actions.FUNCTIONS.no_op(),actMultiTrainSCV(obs)]
         return posActions[self.action]
         # </editor-fold>
@@ -248,6 +272,17 @@ def main(unused_argv):
 
     except KeyboardInterrupt:
         pass
+
+def getRandomWeightedIndex(list):
+    total = 0
+    for l in list:
+        total += max(l, 0)
+    rand = total * random.random()
+    for i in range(0, len(list)):
+        l = list[i]
+        rand = rand - max(l, 0);
+        if (rand <= 0.00001):
+            return i;
 
 
 if __name__ == "__main__":
