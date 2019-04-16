@@ -48,7 +48,7 @@ BATCH_SIZE = 20
 #Max = starting chance, is multiplied by decay after each experience replay
 #until it reaches min chance
 EXPLORATION_MAX = 1.0
-EXPLORATION_MIN = 0.1
+EXPLORATION_MIN = 0.5
 EXPLORATION_DECAY = 0.999996
 DIMENSIONS = 64
 GAMESTEPS = 15000
@@ -213,7 +213,7 @@ class MarineAgent(base_agent.BaseAgent):
         workSupp = getSupplyWorkers(obs)
         idleWorkerTime = getIdleWorkerTime(obs)
         idleProductionTime = getIdleProductionTime(obs)
-        reward = (armySupp - self.armySupp)/10 + (workSupp - self.workSupp) / 15 + (self.supplyDepots - self.oldSupplyDepots) + (self.barracks - self.oldBarracks) - min(1, (idleWorkerTime - self.oldIdleWorkerTime) / 10) - min(1, (idleProductionTime - self.oldIdleProductionTime) / 10) + self.oldReward * 0.7
+        reward = (armySupp - self.armySupp)/10 + (workSupp - self.workSupp) / 15 + (self.supplyDepots - self.oldSupplyDepots) + (self.barracks - self.oldBarracks) - min(1, (idleWorkerTime - self.oldIdleWorkerTime) / 10) - min(1, (idleProductionTime - self.oldIdleProductionTime) / 10)
         
         #print(str(idleWorkerTime - self.oldIdleWorkerTime) + ", " + str(idleProductionTime - self.oldIdleProductionTime))
         
