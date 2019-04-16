@@ -49,7 +49,7 @@ BATCH_SIZE = 20
 #until it reaches min chance
 EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.1
-EXPLORATION_DECAY = 0.99999
+EXPLORATION_DECAY = 0.999996
 DIMENSIONS = 64
 GAMESTEPS = 15000
 
@@ -121,9 +121,16 @@ class MarineAgent(base_agent.BaseAgent):
     nextSupplyNr = 0
     nextBarrackNr = 0
     stepCounter = 0
+    oldReward = 0
+    oldBarracks = 0
+    oldSupplyDepots = 0
+    oldIdleWorkerTime = 0
+    oldIdleProductionTime = 0
 
     workSupp = 0
     armySupp = 0
+    barracks = 0
+    supplyDepots = 0
 
     baseX = 0
     baseY = 0
@@ -136,12 +143,12 @@ class MarineAgent(base_agent.BaseAgent):
         if obs.last():
             print(dqn_solver.exploration_rate)
             score = stepCounter
-            if dqn_solver.exploration_rate <= EXPLORATION_MIN:
+            if dqn_solver.exploration_rate <= EXPLORATION_MIN * 2:
                 compareResultsAndSave(score)
             # Log score to file
             t1 = time() - trainingStartTime
             logFile = open(timestamp + ".log","a+")
-            logFile.write("score=%4d, explore=%.4f, time=%7ds, steps=%8d, supplyWorkers=%3d, supplyArmy=%3d, totalUnits=%4d, totalUnitsKilled=%5d, totalStructuresKilled=%5d\n" % (score, dqn_solver.exploration_rate, t1, stepCounter, getSupplyWorkers(obs), getSupplyArmy(obs), getCumulativeUnits(obs), getCumulativeUnitsKilledValue(obs), getCumulativeStructuresKilledValue(obs)))
+            logFile.write("score=%4d, explore=%.4f, time=%7ds, steps=%8d, supplyWorkers=%3d, supplyArmy=%3d, totalUnits=%4d, totalUnitsKilled=%5d, totalStructuresKilled=%5d, idleWorkerTime=%5d, idleProductionTime=%5d\n" % (score, dqn_solver.exploration_rate, t1, stepCounter, getSupplyWorkers(obs), getSupplyArmy(obs), getCumulativeUnits(obs), getCumulativeUnitsKilledValue(obs), getCumulativeStructuresKilledValue(obs), getIdleWorkerTime(obs), getIdleProductionTime(obs)))
             logFile.close()
 
         # <editor-fold> desc="Multistep action stuff, leave it alone"
@@ -190,16 +197,33 @@ class MarineAgent(base_agent.BaseAgent):
             self.stepCounter = 0
             self.workSupp = getSupplyWorkers(obs)
             self.marineOld = getSupplyArmy(obs)
+            self.barracks = 0
+            self.supplyDepots = 0
+            self.oldReward = 0
+            self.oldBarracks = 0
+            self.oldSupplyDepots = 0
+            self.oldIdleWorkerTime = 0
+            self.oldIdleProductionTime = 0
             #random.seed(1) # Use same random seed every time.
             return actions.FUNCTIONS.no_op()
         # </editor-fold>
         #<editor-fold> desc="Calculate reward"
         armySupp = getSupplyArmy(obs)
         workSupp = getSupplyWorkers(obs)
-        reward = (armySupp -self.armySupp)/10+ (workSupp - self.workSupp) / 15
+        idleWorkerTime = getIdleWorkerTime(obs)
+        idleProductionTime = getIdleProductionTime(obs)
+        reward = (armySupp - self.armySupp)/10 + (workSupp - self.workSupp) / 15 + (self.supplyDepots - self.oldSupplyDepots) + (self.barracks - self.oldBarracks) - min(1, (idleWorkerTime - self.oldIdleWorkerTime) / 10) - min(1, (idleProductionTime - self.oldIdleProductionTime) / 10) + self.oldReward * 0.7
+        
+        #print(str(idleWorkerTime - self.oldIdleWorkerTime) + ", " + str(idleProductionTime - self.oldIdleProductionTime))
+        
         self.armySupp = armySupp
         self.workSupp = workSupp
-        print(reward)
+        self.oldSupplyDepots = self.supplyDepots
+        self.oldBarracks = self.barracks
+        self.oldReward = reward
+        self.oldIdleWorkerTime = idleWorkerTime
+        self.oldIdleProductionTime = idleProductionTime
+        print("%.4f" % (reward))
         #</editor-fold>
 
         newAction = dqn_solver.act(newState) #Use network to get a new action
@@ -254,6 +278,7 @@ class MarineAgent(base_agent.BaseAgent):
             x = BARRACK_LOCATIONS[self.nextBarrackNr][0]
             y = BARRACK_LOCATIONS[self.nextBarrackNr][1]
             self.nextBarrackNr += 1
+            self.barracks += 1
             if (self.nextBarrackNr >= len(BARRACK_LOCATIONS)):
                 self.nextBarrackNr = 0
             return actBuildBarracks(obs, x, y)
@@ -285,17 +310,18 @@ savedNetworkScores = deque(maxlen=10)
 
 def compareResultsAndSave(score):
     # Save network
-    filePrefix="testNetwork"
-    if(len(savedNetworkScores) == 0 or max(savedNetworkScores) < score):
-        if len(savedNetworkScores) < savedNetworkScores.maxlen:
-            savedNetworkScores.append(score)
-            dqn_solver.save(filePrefix+str(score))
-        else:
-            poppedScore = savedNetworkScores.popleft()
-            savedNetworkScores.append(score)
+    filePrefix="marineNetwork"
+    #if(len(savedNetworkScores) == 0 or max(savedNetworkScores) < score):
+    #    if len(savedNetworkScores) < savedNetworkScores.maxlen:
+    #        savedNetworkScores.append(score)
+    #        dqn_solver.save(filePrefix+str(score))
+    #    else:
+    #        poppedScore = savedNetworkScores.popleft()
+    #        savedNetworkScores.append(score)
 
-            os.remove(filePrefix+str(poppedScore)+'.h5')
-            dqn_solver.save(filePrefix+str(score))
+    #        os.remove(filePrefix+str(poppedScore)+'.h5')
+    #        dqn_solver.save(filePrefix+str(score))
+    dqn_solver.save(filePrefix+str(datetime.datetime.now().strftime("%Y-%m-%d-%H.%M.%S")))
     print(savedNetworkScores)
 
 def main(unused_argv):

@@ -544,6 +544,12 @@ def getCumulativeUnitsKilledValue(obs):
 def getCumulativeStructuresKilledValue(obs):
    return obs.observation.score_cumulative.killed_value_structures
 
+def getIdleProductionTime(obs):
+    return obs.observation.score_cumulative.idle_production_time
+   
+def getIdleWorkerTime(obs):
+    return obs.observation.score_cumulative.idle_worker_time
+
 # -----------------------------------END NUMERIC INPUTS-------------------------------
 # -----------------------------------END INPUT SPACE----------------------------------
 #</editor-fold>
