@@ -143,6 +143,7 @@ class MarineAgent(base_agent.BaseAgent):
         if obs.last():
             print(dqn_solver.exploration_rate)
             score = stepCounter
+            global EXPLORATION_MIN
             if dqn_solver.exploration_rate <= EXPLORATION_MIN * 2:
                 compareResultsAndSave(score)
             # Log score to file
