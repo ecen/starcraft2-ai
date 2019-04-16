@@ -48,7 +48,7 @@ BATCH_SIZE = 20
 #Max = starting chance, is multiplied by decay after each experience replay
 #until it reaches min chance
 EXPLORATION_MAX = 1.0
-EXPLORATION_MIN = 0.5
+EXPLORATION_MIN = 0.1
 EXPLORATION_DECAY = 0.999996
 DIMENSIONS = 64
 GAMESTEPS = 15000
@@ -108,7 +108,7 @@ class DQNSolver:
 #Size of input
 obsSpace = 12
 #Size of output /availble actions
-actSpace = 12
+actSpace = 13
 #init of network
 dqn_solver = DQNSolver(obsSpace, actSpace)
 
