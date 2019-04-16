@@ -19,8 +19,10 @@ for line in logFile:
     totalUnits = words[6].replace("totalUnits=", "").replace("\n", "")
     totalUnitsKilled = words[7].replace("totalUnitsKilled=", "").replace("\n", "")
     totalStructuresKilled = words[8].replace("totalStructuresKilled=", "").replace("\n", "")
+    idleWorkerTime = words[9].replace("idleWorkerTime=", "").replace("\n", "")
+    idleProductionTime = words[10].replace("idleProductionTime=", "").replace("\n", "")
     minutes = int(time)/60.0
     #print(score + " " + str(round(minutes, 2)) + "") # Time
-    print("{} {} {} {} {} {} {} {}".format(score, episodes, steps, supplyWorkers, supplyArmy, totalUnits, totalUnitsKilled, totalStructuresKilled))
+    print("{} {} {} {} {} {} {} {} {} {}".format(score, episodes, steps, supplyWorkers, supplyArmy, totalUnits, totalUnitsKilled, totalStructuresKilled, idleWorkerTime, idleProductionTime))
     
 logFile.close()
