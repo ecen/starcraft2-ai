@@ -21,8 +21,10 @@ for line in logFile:
     totalStructuresKilled = words[8].replace("totalStructuresKilled=", "").replace("\n", "")
     idleWorkerTime = words[9].replace("idleWorkerTime=", "").replace("\n", "")
     idleProductionTime = words[10].replace("idleProductionTime=", "").replace("\n", "")
+    depots = words[11].replace("depots=", "").replace("\n", "")
+    barracks = words[12].replace("barracks=", "").replace("\n", "")
     minutes = int(time)/60.0
     #print(score + " " + str(round(minutes, 2)) + "") # Time
-    print("{} {} {} {} {} {} {} {} {} {}".format(score, episodes, steps, supplyWorkers, supplyArmy, totalUnits, totalUnitsKilled, totalStructuresKilled, idleWorkerTime, idleProductionTime))
+    print("{} {} {} {} {} {} {} {} {} {} {} {}".format(score, episodes, steps, supplyWorkers, supplyArmy, totalUnits, totalUnitsKilled, totalStructuresKilled, idleWorkerTime, idleProductionTime, depots, barracks))
     
 logFile.close()

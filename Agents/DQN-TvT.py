@@ -67,15 +67,16 @@ class DQNSolver:
             #Creation of network, topology stuff goes here
             asd = keras.initializers.VarianceScaling(scale=2) #https://towardsdatascience.com/tutorial-double-deep-q-learning-with-dueling-network-architectures-4c1b3fb7f756
             self.model = Sequential()
-            self.model.add(Dense(32, input_shape=(observation_space,), activation="relu", kernel_initializer=asd)) # TODO: Is asd a typo?
+            self.model.add(Dense(32, input_shape=(observation_space,), activation="relu", kernel_initializer=asd))
+            self.model.add(Dense(16, activation="relu", kernel_initializer=asd))
             self.model.add(Dense(16, activation="relu", kernel_initializer=asd))
             self.model.add(Dense(self.action_space, activation="linear", kernel_initializer=asd))
             self.model.compile(loss="logcosh", optimizer=Adam(lr=LEARNING_RATE))
 
         else:
-            self.exploration_rate = 0
+            self.exploration_rate = 0.1
             #TODO Path of network to load if loading network
-            self.model = keras.models.load_model("testNetwork5005.h5")
+            self.model = keras.models.load_model("marineNetwork2019-04-18-08.27.13.h5")
 
 
     def remember(self, state, action, reward, next_state, done):
@@ -126,6 +127,8 @@ class MarineAgent(base_agent.BaseAgent):
     oldSupplyDepots = 0
     oldIdleWorkerTime = 0
     oldIdleProductionTime = 0
+    oldKilledUnitsValue = 0
+    oldKilledStructuresValue = 0
 
     workSupp = 0
     armySupp = 0
@@ -149,7 +152,7 @@ class MarineAgent(base_agent.BaseAgent):
             # Log score to file
             t1 = time() - trainingStartTime
             logFile = open(timestamp + ".log","a+")
-            logFile.write("score=%4d, explore=%.4f, time=%7ds, steps=%8d, supplyWorkers=%3d, supplyArmy=%3d, totalUnits=%4d, totalUnitsKilled=%5d, totalStructuresKilled=%5d, idleWorkerTime=%5d, idleProductionTime=%5d\n" % (score, dqn_solver.exploration_rate, t1, stepCounter, getSupplyWorkers(obs), getSupplyArmy(obs), getCumulativeUnits(obs), getCumulativeUnitsKilledValue(obs), getCumulativeStructuresKilledValue(obs), getIdleWorkerTime(obs), getIdleProductionTime(obs)))
+            logFile.write("score=%4d, explore=%.4f, time=%7ds, steps=%8d, supplyWorkers=%3d, supplyArmy=%3d, totalUnits=%4d, totalUnitsKilled=%5d, totalStructuresKilled=%5d, idleWorkerTime=%5d, idleProductionTime=%5d, depots=%2d, barracks=%2d\n" % (score, dqn_solver.exploration_rate, t1, stepCounter, getSupplyWorkers(obs), getSupplyArmy(obs), getCumulativeUnits(obs), getCumulativeUnitsKilledValue(obs), getCumulativeStructuresKilledValue(obs), getIdleWorkerTime(obs), getIdleProductionTime(obs), self.supplyDepots, self.barracks))
             logFile.close()
 
         # <editor-fold> desc="Multistep action stuff, leave it alone"
@@ -205,6 +208,8 @@ class MarineAgent(base_agent.BaseAgent):
             self.oldSupplyDepots = 0
             self.oldIdleWorkerTime = 0
             self.oldIdleProductionTime = 0
+            self.oldKilledUnitsValue = 0
+            self.oldKilledStructuresValue = 0
             #random.seed(1) # Use same random seed every time.
             return actions.FUNCTIONS.no_op()
         # </editor-fold>
@@ -213,7 +218,12 @@ class MarineAgent(base_agent.BaseAgent):
         workSupp = getSupplyWorkers(obs)
         idleWorkerTime = getIdleWorkerTime(obs)
         idleProductionTime = getIdleProductionTime(obs)
-        reward = (armySupp - self.armySupp)/10 + (workSupp - self.workSupp) / 15 + (self.supplyDepots - self.oldSupplyDepots) + (self.barracks - self.oldBarracks) - min(1, (idleWorkerTime - self.oldIdleWorkerTime) / 10) - min(1, (idleProductionTime - self.oldIdleProductionTime) / 10)
+        killedUnitsValue = getCumulativeUnitsKilledValue(obs)
+        killedStructuresValue = getCumulativeStructuresKilledValue(obs)
+        
+        reward = (armySupp - self.armySupp) + (workSupp - self.workSupp) + (workSupp) / 100 + (armySupp) / 100 + (self.supplyDepots - self.oldSupplyDepots) + (self.barracks - self.oldBarracks) + (killedUnitsValue - self.oldKilledUnitsValue) / 50 + (killedStructuresValue - self.oldKilledStructuresValue) / 100 - min(1, (idleWorkerTime - self.oldIdleWorkerTime) / 100) - min(1, (idleProductionTime - self.oldIdleProductionTime) / 100)
+        
+        #print("Killed: " + str(killedUnitsValue - self.oldKilledUnitsValue))
         
         #print(str(idleWorkerTime - self.oldIdleWorkerTime) + ", " + str(idleProductionTime - self.oldIdleProductionTime))
         
@@ -224,6 +234,8 @@ class MarineAgent(base_agent.BaseAgent):
         self.oldReward = reward
         self.oldIdleWorkerTime = idleWorkerTime
         self.oldIdleProductionTime = idleProductionTime
+        self.oldKilledUnitsValue = killedUnitsValue
+        self.oldKilledStructuresValue = killedStructuresValue
         print("%.4f" % (reward))
         #</editor-fold>
 
@@ -278,15 +290,18 @@ class MarineAgent(base_agent.BaseAgent):
         if self.action == 5: #Build barracks
             x = BARRACK_LOCATIONS[self.nextBarrackNr][0]
             y = BARRACK_LOCATIONS[self.nextBarrackNr][1]
-            self.nextBarrackNr += 1
-            self.barracks += 1
+            if actIsAvailable(obs, actions.FUNCTIONS.Build_Barracks_screen.id):
+                self.nextBarrackNr += 1
+                self.barracks += 1
             if (self.nextBarrackNr >= len(BARRACK_LOCATIONS)):
                 self.nextBarrackNr = 0
             return actBuildBarracks(obs, x, y)
         if self.action == 4: # Build supply
             x = SUPPLY_LOCATIONS[self.nextSupplyNr][0]
             y = SUPPLY_LOCATIONS[self.nextSupplyNr][1]
-            self.nextSupplyNr += 1
+            if actIsAvailable(obs, actions.FUNCTIONS.Build_SupplyDepot_screen.id):
+                self.supplyDepots += 1
+                self.nextSupplyNr += 1
             if (self.nextSupplyNr >= len(SUPPLY_LOCATIONS)):
                 self.nextSupplyNr = 0
             return actBuildSupplyDepot(obs, x, y)
