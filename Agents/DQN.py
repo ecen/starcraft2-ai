@@ -45,7 +45,7 @@ BATCH_SIZE = 20
 #Max = starting chance, is multiplied by decay after each experience replay
 #until it reaches min chance
 EXPLORATION_MAX = 1.0
-EXPLORATION_MIN = 0.2
+EXPLORATION_MIN = 0.05
 EXPLORATION_DECAY = 0.99999
 
 loadNetworkOnlyExploit = False #TODO True if loading trained network
@@ -126,7 +126,7 @@ class MarineAgent(base_agent.BaseAgent):
         if obs.last():
             print(dqn_solver.exploration_rate)
             score = obs.observation.score_cumulative.collected_minerals
-            if dqn_solver.exploration_rate <= EXPLORATION_MIN:
+            if dqn_solver.exploration_rate <= 0.06:
                 compareResultsAndSave(score)
             # Log score to file
             t1 = time() - trainingStartTime
