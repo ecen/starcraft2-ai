@@ -66,6 +66,7 @@ if __name__ == "__main__":
 
     for i in range(0,10000):
         print("EPOCH: " + str(i+1))
+        #TODO: Implement validation set, this should probably be done in stateHandler and/or the sc2reaper branch.
         history = network.model.fit_generator(generator=trainingGenerator)#, use_multiprocessing=True, workers=4, max_queue_size=10)
         network.save(str(i)+"-L"+str(history.history['loss'])) #+ "-VL"+str(history.history['val_loss']))
         #t1 = time() - trainingStartTime
