@@ -27,8 +27,8 @@ The return statement returns the first action that should be executed, in this c
 
 * DQN = Deep Q network agent
 * CNN = Convolutional Network Agent
-* MarineAgent = Marine Agent
-* WinLoss = Win/Loss Agent
+* MarineAgent = Scripted Agent that builds a marine. Can use this to test WinLoss network.
+* WinLoss = Code which trains Win/Loss detection network.
 
 ## DQN
 An implementation of reinforcement learning using Deep Q-Learning, the agent plays a restricted version of the `CollectMineralsAndGas` PySC2 minigame where actions and input are greatly abstracted.
