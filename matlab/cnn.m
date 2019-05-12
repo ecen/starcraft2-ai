@@ -8,11 +8,13 @@ supply=data(1:m,4);
 steps=data(1:m,3);
 explorationDecay=0.9999;
 
+color2 = [0 0.5 1];
+
 clf
 scatter([1:m], scores, 20, supply, 'filled');
 hold on
 yyaxis right
-plot([1:m], max(1*explorationDecay.^steps, 0.05) * 100, 'Color', 	[0, 0.4470, 0.7410]);
+plot([1:m], max(1*explorationDecay.^steps, 0.05) * 100, 'Color', color2);
 yyaxis left
 stepSize=100
 means = []
@@ -30,6 +32,7 @@ deviations;
 %eb.Color = 'black';
 %eb.CapSize = stepSize/4;
 hold off
+colormap(parula(10));
 c = colorbar;
 %yyaxis left
 
@@ -60,11 +63,13 @@ ylabel({'exploration rate'},...
     'FontSize',18,...
     'FontName','Times')
 ytickformat('percentage');
+ax = gca;
+ax.YColor = color2;
 yyaxis left
 set(gca,...
     'FontSize',10);
 %line([713 713], [500 5000], 'LineStyle','--', 'Color', 	[0, 0.4470, 0.7410])
-legend('Network score', 'Exploration rate = 5%', 'Exploration rate', ...
+legend('Network score', 'Exploration rate', ...
     'Location', 'Best');
 %xlim([0 710])
 

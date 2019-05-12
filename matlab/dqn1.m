@@ -1,3 +1,6 @@
+%Global definitions
+color2 = [0 0.5 1];
+
 %% Continous reward: workers
 data = load("data/dqnWorkerReward.csv");
 [n, p] = size(data);
@@ -223,26 +226,33 @@ name = ['figures/', 'dqnRandom', '.eps'];
 print('-depsc2', name);
 
 %% Random vs Continous worker reward pre-determined supply
-data1 = load("data/dqnRandom.csv")
-data2 = load("data/dqnWorkerRewardSupplyLocationExpdecay5-9.csv")
+data1 = load("data/dqnRandom.csv");
+data2 = load("data/dqnWorkerRewardSupplyLocationExpdecay5-9.csv");
+data3 = load("data/scriptedMineral.csv");
 [n1, p1] = size(data1);
 [n2, p2] = size(data2);
-m = min(n1, n2);
+m = 700;%min(n1, n2);
 
 scores1=data1(1:m,1);
-workers1=data1(1:m,4)
+workers1=data1(1:m,4);
 scores2=data2(1:m,1);
 workers2=data2(1:m,4);
+scores3=data3(1:m,1);
+
+%'MarkerFaceColor', [0 0.4470 0.7410]
+%'MarkerFaceColor', [0.9290 0.6940 0.1250]
 
 clf
 hold on
-scatter([1:m], scores1, 20, 'filled', 'MarkerFaceColor', [0 0.4470 0.7410])
-scatter([1:m], scores2, 20, 'filled', 'MarkerFaceColor', [0.9290 0.6940 0.1250])
+scatter([1:m], scores1, 20, 'filled', 'MarkerFaceColor', [0 0.4470 0.7410]);
+scatter([1:m], scores3, 20, 'filled', 'MarkerFaceColor', [0.2161 0.7843 0.5923]);
+scatter([1:m], scores2, 20, 'filled', 'MarkerFaceColor', [0.9290 0.6940 0.1250], ...
+        'MarkerEdgeColor', [0.2290 0.2040 0.0350]);
 hold off
-m1 = mean(scores1)
-s1 = std(scores1)
-m2 = mean(scores2)
-s2 = std(scores2)
+m1 = mean(scores1);
+s1 = std(scores1);
+m2 = mean(scores2);
+s2 = std(scores2);
 %histogram(scores1(300:m))
 %histogram(scores2(300:m))
 
@@ -265,7 +275,7 @@ xlabel('episode',...
     'FontWeight','normal',...
     'FontSize',18,...
     'FontName','Times')
-legend('Random','Trained');
+legend('Random', 'Scripted', 'Trained', 'Location', 'SouthEast');
 set(gca,...
     'FontSize',10);
 %ylim([-1.5 1.5])
@@ -320,26 +330,27 @@ print('-depsc2', name);
 
 
 %% Continous worker rewards, better pre-determined supply depots, 5 nines 
-data = load("data/dqnWorkerRewardSupplyLocationExpdecay5-9.csv")
+data = load("data/dqnWorkerRewardSupplyLocationExpdecay5-9.csv");
 [n, p] = size(data);
-m = 1500
+m = 1500;
 scores=data(1:m,1);
 supply=data(1:m,4);
 steps=data(1:m,3);
 explorationDecay=0.99999;
 
+max(supply)
+
 clf
 scatter([1:m], scores, 20, supply, 'filled');
-hold on
-yyaxis right
-plot([1:m], max(1*explorationDecay.^steps, 0.05) * 100, 'Color', 	[0, 0.4470, 0.7410]);
+hold on;
+yyaxis right;
+plot([1:m], max(1*explorationDecay.^steps, 0.05) * 100, 'Color', color2);
 yyaxis left
-stepSize=100
-means = []
-deviations = []
-j = 1
+stepSize=100;
+means = [];
+deviations = [];
+j = 1;
 for i=1:stepSize:m-stepSize
-    i
     means(j)=mean(scores(i:i+stepSize));
     deviations(j)=std(scores(i:i+stepSize));
     j = j + 1;
@@ -350,6 +361,7 @@ deviations;
 %eb.Color = 'black';
 %eb.CapSize = stepSize/4;
 hold off
+colormap(parula(21));
 c = colorbar;
 %yyaxis left
 
@@ -379,23 +391,26 @@ ylabel({'exploration rate'},...
     'FontWeight','normal',...
     'FontSize',18,...z
     'FontName','Times')
+ax = gca;
+ax.YColor = color2;
 ytickformat('percentage');
 yyaxis left
 set(gca,...
     'FontSize',10);
-line([713 713], [500 5000], 'LineStyle','--', 'Color', 	[0, 0.4470, 0.7410])
+line([713 713], [500 5500], 'LineStyle','--', 'Color', color2)
 legend('Network score', 'Exploration min', 'Exploration rate', ...
     'Location', 'Best');
-xticks(0:300:m)
+xticks(0:300:m);
 %xlim([0 710])
 
 name = ['figures/', 'dqnWorkerRewardSupplyLocationExpdecay5-9', '.eps'];
 print('-depsc2', name);
-print('BarPlot', '-dpng');
+%print('-depsc2', name);
+%print('BarPlot', '-dpng');
 
 %clf
-m1 = mean(scores)
-s1 = std(scores)
+m1 = mean(scores);
+s1 = std(scores);
 hold on
 %histogram(scores(1000:1400), 'BinWidth', 200)
 %histogram(scores(300:700), 'BinWidth', 200)
@@ -552,7 +567,7 @@ clf
 scatter([1:m], scores, 20, supply, 'filled');
 hold on
 yyaxis right
-plot([1:m], max(1*explorationDecay.^steps, 0.00) * 100, 'Color', 	[0, 0.4470, 0.7410]);
+plot([1:m], max(1*explorationDecay.^steps, 0.00) * 100, 'Color', color2);
 yyaxis left
 stepSize=100
 means = []
@@ -570,6 +585,7 @@ deviations;
 %eb.Color = 'black';
 %eb.CapSize = stepSize/4;
 hold off
+colormap(parula(23))
 c = colorbar;
 %yyaxis left
 
@@ -600,10 +616,12 @@ ylabel({'exploration rate'},...
     'FontSize',18,...
     'FontName','Times')
 ytickformat('percentage');
+ax = gca;
+ax.YColor = color2;
 yyaxis left
 set(gca,...
     'FontSize',10);
-line([713 713], [500 5000], 'LineStyle','--', 'Color', 	[0, 0.4470, 0.7410])
+line([713 713], [500 5000], 'LineStyle','--', 'Color', color2)
 legend('Network score', 'Exploration rate = 5%', 'Exploration rate', ...
     'Location', 'Best');
 %xlim([0 710])
@@ -635,7 +653,7 @@ clf
 scatter([1:m], scores, 20, supply, 'filled');
 hold on
 yyaxis right
-plot([1:m], max(1*explorationDecay.^steps, 0.05) * 100, 'Color', 	[0, 0.4470, 0.7410]);
+plot([1:m], max(1*explorationDecay.^steps, 0.05) * 100, 'Color', color2);
 yyaxis left
 stepSize=100
 means = []
@@ -653,6 +671,7 @@ deviations;
 %eb.Color = 'black';
 %eb.CapSize = stepSize/4;
 hold off
+colormap(parula(21))
 c = colorbar;
 %yyaxis left
 
@@ -683,12 +702,14 @@ ylabel({'exploration rate'},...
     'FontSize',18,...
     'FontName','Times')
 ytickformat('percentage');
+ax = gca;
+ax.YColor = color2;
 yyaxis left
 set(gca,...
     'FontSize',10);
-line([713 713], [500 5000], 'LineStyle','--', 'Color', 	[0, 0.4470, 0.7410])
+line([713 713], [500 5000], 'LineStyle','--', 'Color', color2)
 legend('Network score', 'Exploration rate = 5%', 'Exploration rate', ...
-    'Location', 'SouthEast');
+    'Location', 'SouthEast', 'Position', [0.535 0.3 0 0])
 xticks(0:300:m)
 %xlim([0 710])
 
@@ -945,6 +966,91 @@ legend('Network score', 'Exploration rate = 5%', 'Exploration rate', ...
 %xlim([0 710])
 
 name = ['figures/', 'dqnRepeat4Min5', '.eps'];
+print('-depsc2', name);
+print('BarPlot', '-dpng');
+
+%clf
+m1 = mean(scores)
+s1 = std(scores)
+hold on
+%histogram(scores(1000:1400), 'BinWidth', 200)
+%histogram(scores(300:700), 'BinWidth', 200)
+hold off
+
+%% Scripted Mineral
+% Continous worker rewards, better pre-determined supply depots, 5 nines
+% Does not reset some variables between runs.
+% Does not set random seed.
+
+data = load("data/scriptedMineral.csv")
+[n, p] = size(data);
+m = n
+scores=data(1:m,1);
+supply=data(1:m,4);
+steps=data(1:m,3);
+explorationDecay=0.99999;
+
+clf
+scatter([1:m], scores, 20, supply, 'filled');
+hold on
+yyaxis right
+plot([1:m], max(1*explorationDecay.^steps, 0.05) * 100, 'Color', [0, 0.4470, 0.7410]);
+yyaxis left
+stepSize=100
+means = []
+deviations = []
+j = 1
+for i=1:stepSize:m-stepSize
+    i
+    means(j)=mean(scores(i:i+stepSize));
+    deviations(j)=std(scores(i:i+stepSize));
+    j = j + 1;
+end
+means;
+deviations;
+%eb = errorbar([1:stepSize:m-stepSize] + stepSize/2, means, deviations * 2)
+%eb.Color = 'black';
+%eb.CapSize = stepSize/4;
+hold off
+c = colorbar;
+%yyaxis left
+
+title('',...
+    'FontUnits','points',...
+    'interpreter','latex',...
+    'FontWeight','normal',...
+    'FontSize',12,...
+    'FontName','Times')
+ylabel({'score'},...
+    'FontUnits','points',...
+    'interpreter','latex',...
+    'FontWeight','normal',...
+    'FontSize',18,...
+    'FontName','Times')
+xlabel('episode',...
+    'FontUnits','points',...
+    'interpreter','latex',...
+    'FontWeight','normal',...
+    'FontSize',18,...
+    'FontName','Times')
+ylabel(c, 'workers');
+yyaxis right
+ylabel({'exploration rate'},...
+    'FontUnits','points',...
+    'interpreter','latex',...
+    'FontWeight','normal',...
+    'FontSize',18,...
+    'FontName','Times')
+ytickformat('percentage');
+yyaxis left
+set(gca,...
+    'FontSize',10);
+line([713 713], [500 5000], 'LineStyle','--', 'Color', 	[0, 0.4470, 0.7410])
+legend('Network score', 'Exploration rate = 5%', 'Exploration rate', ...
+    'Location', 'Best');
+%xlim([0 710])
+
+name = ['figures/', 'scriptedMineral', '.eps'];
 print('-depsc2', name);
 print('BarPlot', '-dpng');
 
