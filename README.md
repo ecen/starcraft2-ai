@@ -1,5 +1,13 @@
-# starcraft2-ai
-Repository for bachelor-degree project with the goal of developing a StarCraft 2 AI using machine learning.
+# StarCraft II AI
+Repository for bachelor-degree project with the goal of developing a StarCraft 2 AI using machine learning. All code developed under this project is available under the MIT license, see `LICENSE.txt`.
+
+The repository contains the following:
+* `Agents` - Multiple agents as well as the Simple SC2 API. Described below.
+* `dqnlogs` - Saved logfiles from training sessions.
+* `matlab` - Matlab code for data analysis and figure generation. Also contains generated figures.
+* `publishing` - Some materials related to publication like logos and posters.
+* `replays` - Replay files from training the DQN agent for a few hours.
+* `scripts` - Scripts for performing minor tasks like handling log data.
 
 # Simple SC2 API
 This is essentially a wrapper for PySC2 to make it immediately useable for a simple TvT agent. Has the following features:
@@ -38,7 +46,6 @@ A modified version of the DQN agent where input isn't abstracted, instead this u
 
 ## MarineAgent
 This is a very basic scripted agent which builds a couple of marines and then selects all units and attacks the enemy base. Due to its simplicity it will only work on one of the two spawn points on the map. This is mostly used to look at the Win/Loss agents outputs but it's also a simple demonstration of how to use the simple API. It is possible to manually play the game while this is running if one wants to manually test the Win/Loss agent further.
-
 
 ## Win/Loss Agent
 This agent attempts, when given a single state of the game in the form of some of PySC2's feature layers as well as some numeric data, to predict if the player will win or lose the match. Current structure is a convolutional network for the image data combined with a fully connected network for the numeric data, outputs 0 for loss and 1 for win.
